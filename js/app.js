@@ -6,8 +6,12 @@
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (!reduce) document.body.classList.add("hue-live");
+  if (reduce) document.body.classList.remove("booting");
+  else window.addEventListener("load", () => {
+    setTimeout(() => document.body.classList.remove("booting"), 480);
+  });
 
-  /* Signature: one 480px glow follows the native cursor. Nothing else does. */
+  /* Signature: 480px glow follows the native cursor. */
   if (fine && !reduce) {
     window.addEventListener("pointermove", (e) => {
       root.style.setProperty("--x", `${e.clientX}px`);
@@ -16,11 +20,23 @@
   }
 
   /* Glow 12% → 4% over the first 60vh. Hue cycle speeds a little with scroll. */
+  const scenes = $$(".scene");
+  const dots = $$(".scenes a");
   function fadeGlow() {
-    const p = Math.min(1, window.scrollY / (window.innerHeight * 0.6));
+    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    const p = Math.min(1, window.scrollY / (innerHeight * 0.6));
+    const all = Math.min(1, window.scrollY / max);
     root.style.setProperty("--glow", String(0.12 - p * 0.08));
     root.style.setProperty("--hue-ms", `${Math.max(9, 16 - p * 5)}s`);
     root.style.setProperty("--grain", String(0.03 + p * 0.015));
+    root.style.setProperty("--earth", String(1 + all * 0.12));
+    root.style.setProperty("--earth-y", `${all * 40}px`);
+    document.body.classList.toggle("scrolled", window.scrollY > 24);
+    let active = 0;
+    scenes.forEach((el, i) => {
+      if (el.getBoundingClientRect().top < innerHeight * 0.45) active = i;
+    });
+    dots.forEach((d, i) => d.classList.toggle("on", i === active));
   }
   fadeGlow();
   window.addEventListener("scroll", fadeGlow, { passive: true });
@@ -51,6 +67,13 @@
       el.dataset.h = String(i);
       hours.appendChild(el);
     }
+    hours.addEventListener("pointermove", (e) => {
+      const t = e.target.closest("i");
+      $$("#hours i").forEach((el) => el.classList.toggle("near", el === t));
+    });
+    hours.addEventListener("pointerleave", () => {
+      $$("#hours i").forEach((el) => el.classList.remove("near"));
+    });
   }
 
   function pad(n) { return String(n).padStart(2, "0"); }
@@ -109,6 +132,12 @@
     $$("#hours i").forEach((el) => {
       el.classList.toggle("on", Number(el.dataset.h) === d.getHours());
     });
+    const clockEl = $("#big-clock");
+    if (clockEl && clockEl.dataset.prev && clockEl.dataset.prev !== clock) {
+      clockEl.classList.add("tick");
+      setTimeout(() => clockEl.classList.remove("tick"), 280);
+    }
+    if (clockEl) clockEl.dataset.prev = clock;
   }
 
   const door = $("#door");

@@ -16,7 +16,13 @@
     if (location.search.includes("door")) document.documentElement.classList.add("door-on");
   </script>
 </head>
-<body>
+<body class="booting">
+  <div class="boot" id="boot" aria-hidden="true"><span>Aether</span></div>
+  <nav class="scenes" aria-label="Scenes">
+    <a href="#top" data-scene="0" class="on"></a>
+    <a href="#why" data-scene="1"></a>
+    <a href="#enter" data-scene="2"></a>
+  </nav>
   <a class="skip" href="#main">Skip to content</a>
   <div class="grain" aria-hidden="true"></div>
   <div class="halo" aria-hidden="true"></div>
@@ -31,7 +37,7 @@
   </header>
 
   <main id="main">
-    <section class="hero" id="top">
+    <section class="hero scene" id="top">
       <div class="hero-copy">
         <p class="kicker">Overview</p>
         <h1 class="decode" data-text="The surface is the product.">The surface<br />is the product.</h1>
@@ -81,13 +87,17 @@
       </figure>
     </section>
 
-    <section class="block fade air" id="why">
+    <section class="block fade air scene" id="why">
       <p class="kicker">Decisions</p>
       <h2>Shown, not claimed.</h2>
-      <p class="lede">The card above is running. Time is this machine. The day bar is this hour. There are no invented test counts.</p>
+      <ol class="lines">
+        <li class="line" style="--i:0"><strong>Alive</strong><span>The clock and day bar are this machine, this hour.</span></li>
+        <li class="line" style="--i:1"><strong>One field</strong><span>Type a real URL if you want to leave. That is the only door out.</span></li>
+        <li class="line" style="--i:2"><strong>Honest</strong><span>No invented test counts. No borrowed logos. If it is not running, it is not claimed.</span></li>
+      </ol>
     </section>
 
-    <section class="block fade air stop" id="enter">
+    <section class="block fade air stop scene" id="enter">
       <p class="kicker">Door</p>
       <h2>Come in.</h2>
       <p class="lede">Local door. Email stays on this machine.</p>
