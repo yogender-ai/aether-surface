@@ -18,7 +18,6 @@ Vanilla HTML, CSS, one script.
 index.html
 css/main.css      Afterglow tokens, halo, glass
 js/app.js         clock, door, --x/--y glow, scroll fade, midnight
-assets/horizon.jpg
 DECISIONS.md
 ```
 
