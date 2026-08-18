@@ -21,23 +21,25 @@
   <div class="grain" aria-hidden="true"></div>
   <div class="halo" aria-hidden="true"></div>
   <div class="cursor-glow" aria-hidden="true"></div>
+  <div class="far-glow" aria-hidden="true"></div>
   <img class="horizon" src="assets/horizon.jpg" alt="" />
+  <div class="cursor-mark" id="cursor-mark" hidden aria-hidden="true"></div>
 
   <header class="nav">
     <a class="mark" href="#top">Aether</a>
-    <button class="nav-cta" type="button" data-open-door>Enter</button>
+    <button class="nav-cta" type="button" data-open-door data-magnetic>Enter</button>
   </header>
 
   <main id="main">
     <section class="hero" id="top">
       <div class="hero-copy">
         <p class="kicker">Overview</p>
-        <h1>The surface<br />is the product.</h1>
+        <h1 class="decode" data-text="The surface is the product.">The surface<br />is the product.</h1>
         <p class="lede">Live clock. Real day bar. One field to type a URL.</p>
-        <button class="cta" type="button" data-open-door>Enter Aether</button>
+        <button class="cta" type="button" data-open-door data-magnetic>Enter Aether</button>
       </div>
 
-      <figure class="glass" id="board" aria-label="Aether surface">
+      <figure class="glass in" id="board" aria-label="Aether surface">
         <aside class="rail">
           <button class="rail-on" type="button">Overview</button>
           <button type="button" data-open-door>Enter</button>
@@ -48,19 +50,19 @@
             <span class="chip" id="session-chip">guest</span>
           </header>
           <div class="stats">
-            <article>
+            <article class="stat" style="--i:0">
               <span class="kicker">Hour</span>
               <strong id="hour-label">-</strong>
             </article>
-            <article>
+            <article class="stat" style="--i:1">
               <span class="kicker">Day used</span>
               <strong id="day-label">-</strong>
             </article>
-            <article>
+            <article class="stat" style="--i:2">
               <span class="kicker">Field</span>
               <strong id="field-label">live</strong>
             </article>
-            <article>
+            <article class="stat" style="--i:3">
               <span class="kicker">Clock</span>
               <strong id="stat-clock">00:00</strong>
             </article>
@@ -79,23 +81,23 @@
       </figure>
     </section>
 
-    <section class="block fade" id="why">
+    <section class="block fade air" id="why">
       <p class="kicker">Decisions</p>
       <h2>Shown, not claimed.</h2>
       <p class="lede">The card above is running. Time is this machine. The day bar is this hour. There are no invented test counts.</p>
     </section>
 
-    <section class="block fade" id="enter">
+    <section class="block fade air stop" id="enter">
       <p class="kicker">Door</p>
       <h2>Come in.</h2>
       <p class="lede">Local door. Email stays on this machine.</p>
-      <button class="cta" type="button" data-open-door>Enter Aether</button>
+      <button class="cta" type="button" data-open-door data-magnetic>Enter Aether</button>
     </section>
   </main>
 
   <footer class="foot">
-    <p>Aether · Acdyon track two</p>
-    <p>Dark only. Native cursor. One glow.</p>
+    <p class="kicker">Aether / Acdyon track two</p>
+    <p class="kicker">Dark only / Native cursor / One glow</p>
   </footer>
 
   <div class="door" id="door" hidden>

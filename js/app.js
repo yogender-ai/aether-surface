@@ -15,10 +15,12 @@
     }, { passive: true });
   }
 
-  /* Glow 12% → 4% over the first 60vh. One scrollY read. */
+  /* Glow 12% → 4% over the first 60vh. Hue cycle speeds a little with scroll. */
   function fadeGlow() {
     const p = Math.min(1, window.scrollY / (window.innerHeight * 0.6));
     root.style.setProperty("--glow", String(0.12 - p * 0.08));
+    root.style.setProperty("--hue-ms", `${Math.max(9, 16 - p * 5)}s`);
+    root.style.setProperty("--grain", String(0.03 + p * 0.015));
   }
   fadeGlow();
   window.addEventListener("scroll", fadeGlow, { passive: true });
@@ -172,8 +174,73 @@
 
   const io = new IntersectionObserver((entries) => {
     entries.forEach((en) => { if (en.isIntersecting) en.target.classList.add("in"); });
-  }, { threshold: 0.35 });
-  $$(".fade").forEach((el) => io.observe(el));
+  }, { threshold: 0.18, rootMargin: "0px 0px -30% 0px" });
+  $$(".fade, .glass").forEach((el) => io.observe(el));
+  const glass = $("#board");
+  if (glass) {
+    const r = glass.getBoundingClientRect();
+    if (r.top < innerHeight * 0.85) glass.classList.add("in");
+    if (fine && !reduce) {
+      glass.addEventListener("pointermove", (e) => {
+        const b = glass.getBoundingClientRect();
+        glass.style.setProperty("--sx", `${e.clientX - b.left}px`);
+        glass.style.setProperty("--sy", `${e.clientY - b.top}px`);
+      });
+    }
+  }
+
+  if (fine && !reduce) {
+    $$("[data-magnetic]").forEach((el) => {
+      el.addEventListener("pointermove", (e) => {
+        const b = el.getBoundingClientRect();
+        const x = ((e.clientX - b.left) / b.width - 0.5) * 14;
+        const y = ((e.clientY - b.top) / b.height - 0.5) * 12;
+        el.style.setProperty("--mx", `${Math.max(-8, Math.min(8, x))}px`);
+        el.style.setProperty("--my", `${Math.max(-8, Math.min(8, y))}px`);
+      });
+      el.addEventListener("pointerleave", () => {
+        el.style.setProperty("--mx", "0px");
+        el.style.setProperty("--my", "0px");
+      });
+    });
+
+    const mark = $("#cursor-mark");
+    const hot = "a, button, .cta, .nav-cta, .glass";
+    document.addEventListener("pointerover", (e) => {
+      if (mark && e.target.closest(hot)) mark.hidden = false;
+    });
+    document.addEventListener("pointerout", (e) => {
+      if (!mark) return;
+      const next = e.relatedTarget;
+      if (!next || !next.closest || !next.closest(hot)) mark.hidden = true;
+    });
+    document.addEventListener("pointermove", (e) => {
+      if (!mark || mark.hidden) return;
+      mark.style.left = `${e.clientX}px`;
+      mark.style.top = `${e.clientY}px`;
+    }, { passive: true });
+  }
+
+  const headline = $(".decode");
+  if (headline && !reduce) {
+    const lines = ["The surface", "is the product."];
+    const glyphs = "ABCDEFGHJKLMNPRSTUVWXYZ";
+    let n = 0;
+    const id = setInterval(() => {
+      n += 1;
+      headline.innerHTML = lines.map((line) => {
+        const cut = Math.floor((n / 16) * line.length);
+        return line.split("").map((ch, i) => {
+          if (ch === " " || ch === ".") return ch;
+          return i < cut ? ch : glyphs[(Math.random() * glyphs.length) | 0];
+        }).join("");
+      }).join("<br />");
+      if (n >= 16) {
+        clearInterval(id);
+        headline.innerHTML = "The surface<br />is the product.";
+      }
+    }, 36);
+  }
 
   applySession();
   tickClock();
