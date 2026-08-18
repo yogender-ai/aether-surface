@@ -174,7 +174,9 @@ body.scrolled .nav {
 
 .mark {
   font-family: var(--display); font-weight: 600; letter-spacing: -0.03em;
+  transition: letter-spacing 0.3s ease, color 0.3s ease;
 }
+.mark:hover { letter-spacing: 0.04em; color: #fff; }
 
 .nav-cta {
   --mx: 0px;
@@ -260,7 +262,9 @@ body.scrolled .nav {
   backdrop-filter: blur(18px);
   overflow: hidden;
   isolation: isolate;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(255,255,255,0.08);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0%, #000 100%);
   mask-image: radial-gradient(180px circle at 50% 50%, transparent 0%, #000 0%);
@@ -318,6 +322,11 @@ body.scrolled .nav {
   padding: 0.15rem 0.45rem;
   border: 1px solid var(--glass-line); border-radius: 999px;
   color: var(--mute);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--g1) 40%, transparent);
+  animation: chip-pulse 2.8s ease-in-out infinite;
+}
+@keyframes chip-pulse {
+  50% { box-shadow: 0 0 12px color-mix(in srgb, var(--g1) 35%, transparent); }
 }
 
 .stats {

@@ -25,9 +25,11 @@ DECISIONS.md
 ## Run
 
 ```bash
-cd aether-surface
+cd /data/yash/Projects/aether-surface
 python3 -m http.server 4173
 ```
+
+Home is a symlink: `~/aether-surface` → this folder.
 
 ## Spec map
 

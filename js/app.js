@@ -6,10 +6,12 @@
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (!reduce) document.body.classList.add("hue-live");
+  function endBoot() {
+    setTimeout(() => document.body.classList.remove("booting"), 420);
+  }
   if (reduce) document.body.classList.remove("booting");
-  else window.addEventListener("load", () => {
-    setTimeout(() => document.body.classList.remove("booting"), 480);
-  });
+  else if (document.readyState === "complete") endBoot();
+  else window.addEventListener("load", endBoot);
 
   /* Signature: 480px glow follows the native cursor. */
   if (fine && !reduce) {
