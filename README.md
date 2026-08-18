@@ -1,6 +1,6 @@
 # Aether
 
-A living start surface. Built as **Part 2** of the Acdyon Technologies frontend challenge.
+Afterglow homepage for the Acdyon frontend challenge, Part 2.
 
 Live: https://aether-surface.vercel.app
 
@@ -8,47 +8,34 @@ Repo: https://github.com/yogender-ai/aether-surface
 
 ## What it is
 
-Most new-tab pages are dead wallpaper. Aether is a field that is new every frame — color from the real hour, drift from noise, light from the pointer — and one command to leave.
-
-There are no fabricated testimonials, user counts, or logos. If it is not running on the page, it is not claimed.
+A start surface. The glass card is the product: live clock, real day used, one URL field. No invented metrics.
 
 ## Stack
 
-Vanilla HTML, CSS, and JavaScript. No framework. Chosen so every line can be explained.
+Vanilla HTML, CSS, one script.
 
 ```
-index.html      structure
-css/main.css    type, space, glass, 390 / 1440
-js/field.js     the living background (one motion system)
-js/app.js       clock, door, command, Konami egg
-DECISIONS.md    the one-page writeup the brief asked for
+index.html
+css/main.css      Afterglow tokens, halo, glass
+js/app.js         clock, door, --x/--y glow, scroll fade, midnight
+assets/horizon.jpg
+DECISIONS.md
 ```
 
-## Run locally
+## Run
 
 ```bash
 cd aether-surface
 python3 -m http.server 4173
 ```
 
-Open http://localhost:4173
-
-## What to look at
-
-- Hero: value prop + one CTA in the first screen
-- `#surface`: live product, not a screenshot
-- Magnetic pull on the cream button
-- Enter: local door, nothing is sent
-- `↑ ↑ ↓ ↓ ← → ← → B A` for the easter egg
-- Dark only. Reduced-motion respected.
-
-## Brief map
+## Spec map
 
 | Ask | Where |
 | --- | --- |
-| Wow in 3 seconds | Hero + live field |
-| Show the product | `#surface` |
-| Motion that earns keep | `js/field.js` |
-| 390 and 1440 | `css/main.css` media queries |
-| Honesty | copy + real clock / day ribbon |
-| DECISIONS.md | this repo |
+| Void + indigo/rose | CSS variables `--void --g1 --g2` |
+| Product is the hero | `.glass` in the lower two-thirds |
+| One pointer effect | `--x --y` radial 480px / 60px blur / 12% |
+| Scroll fade | `--glow` 0.12 → 0.04 over 60vh |
+| Easter egg | type `midnight` |
+| 390 / 1440 | media queries; no tracking glow on coarse pointers |
