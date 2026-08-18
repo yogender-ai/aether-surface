@@ -28,6 +28,8 @@
     meteors: [],
     rings: [],
     running: true,
+    speed: 0.55,
+    chapter: "fly",
   };
 
   function rnd(a, b) {
@@ -195,7 +197,7 @@
     state.rush *= 0.94;
     state.flash *= 0.92;
     state.hue *= 0.97;
-    state.camZ += 0.55 + state.rush * 4;
+    state.camZ += state.speed + state.rush * 4;
 
     if (!reduced && now >= state.nextEvent) {
       fireEvent();
@@ -324,7 +326,26 @@
     state.ty = (y / state.h - 0.4) * 80;
   }
 
+  const chapters = {
+    fly: { speed: 0.55, accent: "#5ce1e6" },
+    dock: { speed: 0.22, accent: "#7cf0d0" },
+    constellation: { speed: 0.9, accent: "#8b7cff" },
+    horizon: { speed: 1.35, accent: "#5ce1e6" },
+  };
+
   window.AetherField = {
+    setChapter(name) {
+      if (state.chapter === name) return;
+      state.chapter = name;
+      const ch = chapters[name] || chapters.fly;
+      state.speed = ch.speed;
+      document.documentElement.style.setProperty("--accent", ch.accent);
+      state.flash = 0.35;
+      state.windows.forEach((w, i) => {
+        if (i % 5 === 0) w.lit = 1;
+      });
+      if (name === "horizon" || name === "constellation") fireEvent();
+    },
     intensify() {
       state.rush = 1;
       state.flash = 1;

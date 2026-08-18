@@ -198,8 +198,45 @@
     }
   });
 
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  $$("[data-tilt]").forEach((el) => {
+    el.addEventListener("pointermove", (e) => {
+      if (reduce) return;
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      el.style.setProperty("--rx", `${(-py * 10).toFixed(2)}deg`);
+      el.style.setProperty("--ry", `${(px * 12).toFixed(2)}deg`);
+      el.style.setProperty("--lx", `${50 + px * 40}%`);
+      el.style.setProperty("--ly", `${50 + py * 40}%`);
+    });
+    el.addEventListener("pointerleave", () => {
+      el.style.setProperty("--rx", "0deg");
+      el.style.setProperty("--ry", "0deg");
+    });
+  });
+
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("in");
+        const name = entry.target.getAttribute("data-chapter");
+        if (name) window.AetherField?.setChapter(name);
+      });
+    },
+    { threshold: 0.42 }
+  );
+  $$("[data-chapter], .reveal").forEach((el) => {
+    io.observe(el);
+    const r = el.getBoundingClientRect();
+    if (r.top < innerHeight * 0.75 && r.bottom > 80) el.classList.add("in");
+  });
+
   applySession();
   tickClock();
   setInterval(tickClock, 1000);
 
   if (new URLSearchParams(location.search).has("door")) openDoor();
+})();
