@@ -58,7 +58,8 @@ Body: **Inter**
 Kickers: **JetBrains Mono**, 12px, 0.08em, uppercase  
 
 One pointer move: a 480px / 60px-blur / 12% glow on `--x` / `--y`.  
-Native arrow. Scroll eases that glow 12% → 4% over the first 60vh.
+Native arrow. The room starts unlit. Scroll, hold the glass, or pull the cord to strike.  
+Hour-strip drag is the dimmer. Scroll then eases that glow 12% → 4% over the first 60vh.
 
 ---
 
@@ -67,7 +68,7 @@ Native arrow. Scroll eases that glow 12% → 4% over the first 60vh.
 ```text
 index.html      three scenes + live glass + two-step door
 css/main.css    Afterglow tokens, halo, grain, snap
-js/app.js       clock, glow, ease-scroll, midnight, door
+js/app.js       clock, strike, dimmer, glow, midnight, door
 DECISIONS.md    the one-page writeup the brief asked for
 ```
 

@@ -14,9 +14,10 @@
   <link rel="stylesheet" href="css/main.css" />
   <script>
     if (location.search.includes("door")) document.documentElement.classList.add("door-on");
+    if (location.search.includes("nboot")) document.documentElement.classList.add("nboot");
   </script>
 </head>
-<body class="booting">
+<body class="booting unlit">
   <div class="boot" id="boot" aria-hidden="true"><span>Aether</span></div>
   <nav class="scenes" aria-label="Scenes">
     <a href="#top" data-scene="0" class="on"></a>
@@ -42,10 +43,15 @@
         <p class="kicker">Overview</p>
         <h1 class="decode" data-text="The surface is the product.">The surface<br />is the product.</h1>
         <p class="lede">Live clock. Real day bar. One field to type a URL.</p>
+        <p class="strike-hint" id="strike-hint">Scroll. Hold the surface. Pull the cord.</p>
         <button class="cta" type="button" data-open-door data-magnetic>Enter Aether</button>
       </div>
 
       <figure class="glass in" id="board" aria-label="Aether surface">
+        <div class="cord" id="cord" role="button" tabindex="0" aria-label="Pull to strike the light" aria-pressed="false">
+          <i class="cord-line" aria-hidden="true"></i>
+          <i class="cord-knob" aria-hidden="true"></i>
+        </div>
         <aside class="rail">
           <button class="rail-on" type="button">Overview</button>
           <button type="button" data-open-door>Enter</button>
@@ -107,7 +113,7 @@
 
   <footer class="foot">
     <p class="kicker">Aether / Acdyon track two</p>
-    <p class="kicker">Dark only / Native cursor / One glow</p>
+    <p class="kicker">Dark until you strike / Native cursor / One glow</p>
   </footer>
 
   <div class="door" id="door" hidden>

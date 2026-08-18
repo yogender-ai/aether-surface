@@ -24,6 +24,8 @@
   --grain: 0.03;
   --earth: 1;
   --earth-y: 0px;
+  --hold: 0;
+  --cord: 0px;
   --display: "Bricolage Grotesque", "Inter", sans-serif;
   --body: "Inter", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, monospace;
@@ -91,6 +93,8 @@ a { color: inherit; text-decoration: none; }
   background:
     radial-gradient(70% 50% at 50% 88%, color-mix(in srgb, var(--g1) 28%, transparent), transparent 70%),
     radial-gradient(50% 40% at 70% 80%, color-mix(in srgb, var(--g2) 22%, transparent), transparent 68%);
+  opacity: 1;
+  transition: opacity 1s ease;
 }
 
 .cursor-glow {
@@ -134,6 +138,7 @@ a { color: inherit; text-decoration: none; }
   transform: translate3d(0, var(--earth-y), 0) scale(var(--earth));
   will-change: transform;
   opacity: 0.95;
+  transition: opacity 1s ease, filter 1s ease;
 }
 
 .boot {
@@ -148,7 +153,8 @@ a { color: inherit; text-decoration: none; }
   background: linear-gradient(90deg, var(--g1), var(--g2));
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-body:not(.booting) .boot { opacity: 0; visibility: hidden; pointer-events: none; }
+body:not(.booting) .boot,
+html.nboot .boot { opacity: 0; visibility: hidden; pointer-events: none; }
 
 .scenes {
   position: fixed; right: 18px; top: 50%; transform: translateY(-50%);
@@ -239,6 +245,25 @@ body.scrolled .nav {
   color: var(--mute);
 }
 
+.strike-hint {
+  margin: 0.7rem 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mute);
+  opacity: 0.72;
+  transition: opacity 0.6s ease, height 0.6s ease, margin 0.6s ease;
+}
+body.lit .strike-hint {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .cta {
   --mx: 0px;
   --my: 0px;
@@ -304,11 +329,56 @@ body.scrolled .nav {
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
 }
 .glass:hover::after { opacity: 1; }
+.glass.holding {
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.35),
+    0 0 calc(24px + var(--hold) * 90px) color-mix(in srgb, var(--g1) calc(var(--hold) * 55%), transparent);
+}
 .rail, .pane { position: relative; z-index: 2; }
+
+.cord {
+  position: absolute;
+  top: 0;
+  left: 62px;
+  z-index: 6;
+  width: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.cord:active { cursor: grabbing; }
+.cord-line {
+  display: block;
+  width: 1px;
+  height: calc(26px + var(--cord));
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.38));
+}
+.cord-knob {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--g1) 32%, #161618);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+}
+body.lit .cord-knob {
+  background: linear-gradient(180deg, var(--g1), var(--g2));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--g1) 55%, transparent);
+}
+body.unlit .cord-knob {
+  animation: ember 2.4s ease-in-out infinite;
+}
+@keyframes ember {
+  50% { box-shadow: 0 0 12px color-mix(in srgb, var(--g1) 45%, transparent); }
+}
 
 .rail {
   display: flex; flex-direction: column; gap: 0.2rem;
-  padding: 1rem 0.7rem;
+  padding: 2.6rem 0.7rem 1rem;
   border-right: 1px solid var(--glass-line);
 }
 .rail button {
@@ -382,12 +452,15 @@ body.scrolled .nav {
 .hours {
   display: grid; grid-template-columns: repeat(12, 1fr);
   gap: 4px; margin-bottom: 1rem;
+  touch-action: none;
+  cursor: ew-resize;
 }
 .hours i {
   height: 8px; border-radius: 99px;
   background: rgba(255, 255, 255, 0.08);
 }
-.hours i.near { background: color-mix(in srgb, var(--g1) 45%, rgba(255,255,255,0.12)); }
+.hours i.near,
+.hours i.fill { background: color-mix(in srgb, var(--g1) 45%, rgba(255,255,255,0.12)); }
 .hours i.on {
   background: linear-gradient(90deg, var(--g1), var(--g2));
 }
@@ -535,12 +608,56 @@ body.scrolled .nav {
 }
 .toast[hidden] { display: none; }
 
+body.unlit .halo { opacity: 0.18; }
+body.unlit .cursor-glow { opacity: 0.03; }
+body.unlit .far-glow { opacity: 0.02; }
+body.unlit .horizon { opacity: 0.3; filter: saturate(0.45); }
+body.unlit .hero h1 {
+  color: color-mix(in srgb, var(--text) 58%, #0a0a0b);
+}
+body.unlit .cta {
+  background: color-mix(in srgb, var(--text) 78%, #000);
+  box-shadow: none;
+}
+body.unlit .glass {
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+}
+body.unlit .glass.in {
+  -webkit-mask-image: radial-gradient(95% 88% at 50% 42%, #000 72%, transparent 100%);
+  mask-image: radial-gradient(95% 88% at 50% 42%, #000 72%, transparent 100%);
+}
+body.unlit .hours i.on { background: rgba(255, 255, 255, 0.2); }
+body.unlit .chip { animation: none; }
+body.unlit .big-clock {
+  color: color-mix(in srgb, var(--text) 52%, #000);
+}
+
+body.lit .halo,
+body.lit .horizon,
+body.lit .hero h1,
+body.lit .cta,
+body.lit .glass,
+body.lit .big-clock {
+  transition:
+    opacity 1s ease, filter 1s ease, color 0.9s ease,
+    background 0.9s ease, box-shadow 1s ease;
+}
+
+body.striking .cursor-glow { opacity: 0.22; }
+
 :focus-visible { outline: 2px solid var(--g1); outline-offset: 3px; }
 
 @media (max-width: 860px) {
   .hero h1 { font-size: 32px; }
   .glass { grid-template-columns: 1fr; }
-  .rail { flex-direction: row; border-right: 0; border-bottom: 1px solid var(--glass-line); }
+  .cord { left: auto; right: 14px; }
+  .rail {
+    flex-direction: row;
+    border-right: 0;
+    border-bottom: 1px solid var(--glass-line);
+    padding: 0.7rem 1.8rem 0.7rem 0.7rem;
+  }
   .stats { grid-template-columns: 1fr 1fr; }
   .scenes { display: none; }
   .line { grid-template-columns: 1fr; gap: 0.3rem; }
@@ -570,6 +687,8 @@ body.scrolled .nav {
     mask-image: none;
   }
   .boot { display: none; }
+  body.unlit .cord-knob { animation: none; }
+  .strike-hint { display: none; }
 }
 
 html.door-on .door[hidden] { display: grid; }

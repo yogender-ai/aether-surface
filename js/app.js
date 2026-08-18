@@ -9,7 +9,7 @@
   function endBoot() {
     setTimeout(() => document.body.classList.remove("booting"), 420);
   }
-  if (reduce) document.body.classList.remove("booting");
+  if (reduce || navigator.webdriver) document.body.classList.remove("booting");
   else if (document.readyState === "complete") endBoot();
   else window.addEventListener("load", endBoot);
 
@@ -21,17 +21,81 @@
     }, { passive: true });
   }
 
+  /* Room starts unlit. Scroll, hold, or pull latches the Afterglow. */
+  let lit = reduce || location.search.includes("door");
+  let dimmer = null;
+  let audio = null;
+  let bloomUntil = 0;
+  document.body.classList.toggle("unlit", !lit);
+  document.body.classList.toggle("lit", lit);
+
+  function unlockAudio() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!audio) audio = new AC();
+    if (audio.state === "suspended") audio.resume();
+  }
+  function tone(freq, dur, type, gain, slide) {
+    if (!audio || reduce) return;
+    const t = audio.currentTime;
+    const o = audio.createOscillator();
+    const g = audio.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.016);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(audio.destination);
+    o.start(t);
+    o.stop(t + dur + 0.02);
+  }
+  function playStrike() {
+    unlockAudio();
+    tone(240, 0.52, "sine", 0.05, 96);
+    tone(720, 0.07, "triangle", 0.028);
+  }
+  function playOut() {
+    unlockAudio();
+    tone(160, 0.26, "sine", 0.028, 68);
+  }
+  function setLit(on) {
+    if (on === lit) return;
+    lit = on;
+    dimmer = null;
+    document.body.classList.toggle("unlit", !on);
+    document.body.classList.toggle("lit", on);
+    const cord = $("#cord");
+    if (cord) cord.setAttribute("aria-pressed", on ? "true" : "false");
+    if (on) {
+      document.body.classList.add("striking");
+      bloomUntil = performance.now() + 520;
+      want.glow = 0.2;
+      playStrike();
+      setTimeout(() => document.body.classList.remove("striking"), 480);
+    } else {
+      bloomUntil = 0;
+      want.glow = 0.028;
+      playOut();
+    }
+  }
+
   /* Glow 12% → 4% over the first 60vh. Hue cycle speeds a little with scroll. */
   const scenes = $$(".scene");
   const dots = $$(".scenes a");
-  const want = { glow: 0.12, earth: 1, earthY: 0, grain: 0.03, hue: 16 };
+  const want = { glow: lit ? 0.12 : 0.028, earth: 1, earthY: 0, grain: 0.03, hue: 16 };
   const cur = { ...want };
 
   function readScroll() {
     const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
     const p = Math.min(1, window.scrollY / (innerHeight * 0.6));
     const all = Math.min(1, window.scrollY / max);
-    want.glow = 0.12 - p * 0.08;
+    if (!lit && window.scrollY > 8) setLit(true);
+    if (dimmer != null && window.scrollY > 12) dimmer = null;
+    if (!lit) want.glow = 0.028;
+    else if (performance.now() < bloomUntil) want.glow = 0.2;
+    else if (dimmer != null) want.glow = 0.035 + dimmer * 0.145;
+    else want.glow = 0.12 - p * 0.08;
     want.hue = 16 - p * 5;
     want.grain = 0.03 + p * 0.015;
     want.earth = 1 + all * 0.1;
@@ -99,6 +163,27 @@
     hours.addEventListener("pointerleave", () => {
       $$("#hours i").forEach((el) => el.classList.remove("near"));
     });
+    let dragging = false;
+    function applyDim(e) {
+      const b = hours.getBoundingClientRect();
+      const t = Math.max(0, Math.min(1, (e.clientX - b.left) / b.width));
+      dimmer = t;
+      if (lit) want.glow = 0.035 + t * 0.145;
+      const cells = $$("#hours i");
+      const n = Math.round(t * (cells.length - 1));
+      cells.forEach((el, i) => el.classList.toggle("fill", i <= n));
+    }
+    hours.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      hours.setPointerCapture(e.pointerId);
+      unlockAudio();
+      applyDim(e);
+    });
+    hours.addEventListener("pointermove", (e) => {
+      if (dragging) applyDim(e);
+    });
+    hours.addEventListener("pointerup", () => { dragging = false; });
+    hours.addEventListener("pointercancel", () => { dragging = false; });
   }
 
   function pad(n) { return String(n).padStart(2, "0"); }
@@ -275,6 +360,85 @@
         glass.style.setProperty("--sy", `${e.clientY - b.top}px`);
       });
     }
+    let holding = false;
+    let holdRaf = 0;
+    let holdStart = 0;
+    function abortHold() {
+      holding = false;
+      if (holdRaf) cancelAnimationFrame(holdRaf);
+      glass.classList.remove("holding");
+      glass.style.setProperty("--hold", "0");
+    }
+    function holdTick(now) {
+      if (!holding) return;
+      const p = Math.min(1, (now - holdStart) / 560);
+      glass.style.setProperty("--hold", p.toFixed(3));
+      if (p >= 1) {
+        setLit(true);
+        abortHold();
+        return;
+      }
+      holdRaf = requestAnimationFrame(holdTick);
+    }
+    glass.addEventListener("pointerdown", (e) => {
+      if (e.button) return;
+      if (e.target.closest("a, button, input, label, .cord, .command, .hours")) return;
+      if (lit) return;
+      holding = true;
+      holdStart = performance.now();
+      glass.classList.add("holding");
+      unlockAudio();
+      holdRaf = requestAnimationFrame(holdTick);
+    });
+    ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => {
+      glass.addEventListener(ev, abortHold);
+    });
+  }
+
+  const cord = $("#cord");
+  if (cord && !reduce) {
+    let down = false;
+    let startY = 0;
+    let pull = 0;
+    function setPull(v) {
+      pull = v;
+      cord.style.setProperty("--cord", `${v}px`);
+    }
+    cord.addEventListener("pointerdown", (e) => {
+      if (e.button) return;
+      down = true;
+      startY = e.clientY;
+      cord.setPointerCapture(e.pointerId);
+      unlockAudio();
+      e.preventDefault();
+    });
+    cord.addEventListener("pointermove", (e) => {
+      if (!down) return;
+      setPull(Math.max(0, Math.min(88, e.clientY - startY)));
+    });
+    function endPull() {
+      if (!down) return;
+      down = false;
+      if (pull >= 46) setLit(!lit);
+      const from = pull;
+      const t0 = performance.now();
+      (function snap(now) {
+        const t = Math.min(1, (now - t0) / 280);
+        const ease = 1 - (1 - t) ** 3;
+        setPull(from * (1 - ease));
+        if (t < 1) requestAnimationFrame(snap);
+      })(t0);
+    }
+    cord.addEventListener("pointerup", endPull);
+    cord.addEventListener("pointercancel", endPull);
+    cord.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        setLit(!lit);
+      }
+    });
+  } else if (cord && reduce) {
+    cord.addEventListener("click", () => setLit(!lit));
   }
 
   if (fine && !reduce) {
@@ -330,6 +494,7 @@
     }, 36);
   }
 
+  document.addEventListener("pointerdown", unlockAudio, { once: true });
   applySession();
   tickClock();
   setInterval(tickClock, 1000);

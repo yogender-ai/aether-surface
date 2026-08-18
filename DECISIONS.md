@@ -10,6 +10,8 @@ I shipped **Afterglow**: void `#0A0A0B`, one live product card in an indigo `#6E
 
 The one pointer move is a 480px / 60px-blur / 12% glow on `--x` / `--y`. Native arrow. No custom cursor, no flying tiles. Vanilla HTML/CSS/JS so I can walk every line on the call.
 
+The room starts unlit — ember only. First scroll, a 560ms hold on the glass, or a pull on the cord past 46px latches the halo. The hour strip is a drag dimmer. One Web Audio strike on first light, nothing looping. Same tokens. No extra chrome.
+
 ## 2. One trade-off under the time limit
 
 Local door only (`localStorage`, two steps, nothing posted). With a real week I would add a tiny backend and persist board prefs.
