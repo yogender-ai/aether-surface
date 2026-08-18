@@ -1,42 +1,117 @@
-# Aether
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&height=200&color=0:0A0A0B,40:6E5BFF,75:FF6F91,100:0A0A0B&text=AETHER&fontColor=EDEDEA&fontAlignY=38&fontSize=54&fontAlign=50&desc=the%20surface%20is%20the%20product&descAlignY=62&descSize=16&animation=twinkling&section=header" alt="Aether waving banner" />
+</p>
 
-Afterglow homepage for the Acdyon frontend challenge, Part 2.
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Bricolage+Grotesque&weight=600&size=28&duration=2600&pause=900&color=EDEDEA&center=true&vCenter=true&width=780&lines=The+surface+is+the+product.;Live+clock.+Real+day+bar.+One+URL.;Void+%2B+indigo+%E2%86%94+rose.+Native+cursor.;Type+midnight." alt="Aether typing line" />
+</p>
 
-Live: https://aether-surface.vercel.app
+<p align="center">
+  <a href="https://aether-surface.vercel.app">
+    <img src="https://img.shields.io/badge/Live-aether--surface.vercel.app-6E5BFF?style=for-the-badge&labelColor=0A0A0B" alt="Live site" />
+  </a>
+  <img src="https://img.shields.io/badge/Track-Part%202%20Homepage-FF6F91?style=for-the-badge&labelColor=0A0A0B" alt="Part 2" />
+  <img src="https://img.shields.io/badge/Stack-HTML%20%2B%20CSS%20%2B%20JS-EDEDEA?style=for-the-badge&labelColor=0A0A0B" alt="Vanilla stack" />
+  <img src="https://img.shields.io/badge/Theme-Dark%20only-111111?style=for-the-badge&labelColor=0A0A0B" alt="Dark only" />
+</p>
 
-Repo: https://github.com/yogender-ai/aether-surface
+<p align="center">
+  <b>Aether</b> is a start surface for the Acdyon frontend challenge.<br/>
+  Afterglow: near-black, one live glass card, a slow indigo → rose halo.<br/>
+  No invented users. No borrowed logos. If it is not running on the page, it is not claimed.
+</p>
 
-## What it is
+<p align="center">
+  <a href="https://aether-surface.vercel.app"><strong>Open the live surface →</strong></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/yogender-ai/aether-surface/blob/main/DECISIONS.md"><strong>Read DECISIONS.md</strong></a>
+</p>
 
-A start surface. The glass card is the product: live clock, real day used, one URL field. No invented metrics.
+---
 
-## Stack
+## What it does
 
-Vanilla HTML, CSS, one script.
+The first screen *is* the product.
 
+| On the glass | Honest? |
+| --- | --- |
+| Clock | This machine, this minute |
+| Day used | Percent of today that has actually passed |
+| Hour cells | Current hour lit. Nothing invented |
+| URL field | Leaves only on a real URL |
+| Door | Email then passphrase. Stays in `localStorage`. Nothing is posted |
+
+---
+
+## Afterglow language
+
+```text
+Void        #0A0A0B
+Text        #EDEDEA
+Indigo  →   #6E5BFF
+Rose    →   #FF6F91
+Glass       rgba(255,255,255,0.04)
 ```
-index.html
-css/main.css      Afterglow tokens, halo, glass
-js/app.js         clock, door, --x/--y glow, scroll fade, midnight
-DECISIONS.md
+
+Display: **Bricolage Grotesque 600**  
+Body: **Inter**  
+Kickers: **JetBrains Mono**, 12px, 0.08em, uppercase  
+
+One pointer move: a 480px / 60px-blur / 12% glow on `--x` / `--y`.  
+Native arrow. Scroll eases that glow 12% → 4% over the first 60vh.
+
+---
+
+## Repo map
+
+```text
+index.html      three scenes + live glass + two-step door
+css/main.css    Afterglow tokens, halo, grain, snap
+js/app.js       clock, glow, ease-scroll, midnight, door
+DECISIONS.md    the one-page writeup the brief asked for
 ```
 
-## Run
+---
+
+## Run locally
 
 ```bash
 cd /data/yash/Projects/aether-surface
 python3 -m http.server 4173
 ```
 
-Home is a symlink: `~/aether-surface` → this folder.
+Then open http://localhost:4173
 
-## Spec map
+`~/aether-surface` is a symlink to this folder.
 
-| Ask | Where |
+---
+
+## Brief map
+
+| They asked | Where it lives |
 | --- | --- |
-| Void + indigo/rose | CSS variables `--void --g1 --g2` |
-| Product is the hero | `.glass` in the lower two-thirds |
-| One pointer effect | `--x --y` radial 480px / 60px blur / 12% |
-| Scroll fade | `--glow` 0.12 → 0.04 over 60vh |
-| Easter egg | type `midnight` |
-| 390 / 1440 | media queries; no tracking glow on coarse pointers |
+| One track | Part 2 only |
+| Hero + one CTA | Overview → Enter Aether |
+| Show the product | Live glass card |
+| Motion that earns keep | Cursor glow + eased scroll |
+| 390 / 1440 | Media queries. No tracking glow on coarse pointers |
+| Dark all-or-nothing | Dark only |
+| Honesty | No fake counts, logos, or quotes |
+| Written page | `DECISIONS.md` |
+| Easter egg | type **midnight** |
+
+---
+
+## How to look at it
+
+1. Open the [live site](https://aether-surface.vercel.app)
+2. Move the mouse — the halo follows
+3. Scroll Overview → Decisions → Door
+4. Click **Enter** (email, then passphrase)
+5. Type **midnight**
+
+---
+
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&height=130&section=footer&color=0:0A0A0B,40:6E5BFF,80:FF6F91,100:0A0A0B&animation=twinkling" alt="Aether footer wave" />
+</p>
