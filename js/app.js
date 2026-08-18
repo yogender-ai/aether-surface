@@ -11,15 +11,9 @@
   const commandNote = $("#command-note");
   const sessionChip = $("#session-chip");
   const hello = $("#hello");
-
   const KEY = "aether.session";
-  if (new URLSearchParams(location.search).has("still")) {
-    document.documentElement.classList.add("still");
-  }
 
-  function pad(n) {
-    return String(n).padStart(2, "0");
-  }
+  function pad(n) { return String(n).padStart(2, "0"); }
 
   function greeting(d) {
     const h = d.getHours();
@@ -32,19 +26,16 @@
 
   function hourName(d) {
     const h = d.getHours();
-    if (h < 6) return "Night field";
+    if (h < 6) return "Night";
     if (h < 10) return "Dawn";
     if (h < 17) return "Day";
     if (h < 20) return "Dusk";
-    return "Night field";
+    return "Night";
   }
 
   function session() {
-    try {
-      return JSON.parse(localStorage.getItem(KEY) || "null");
-    } catch {
-      return null;
-    }
+    try { return JSON.parse(localStorage.getItem(KEY) || "null"); }
+    catch { return null; }
   }
 
   function firstName(email) {
@@ -52,49 +43,34 @@
     return local.replace(/[._-]+/g, " ").split(" ")[0];
   }
 
-  function applySession() {
-    const s = session();
-    if (s?.email) {
-      sessionChip.textContent = firstName(s.email);
-      const line = `${greeting(new Date())}, ${firstName(s.email)}`;
-      if (hello) hello.textContent = line;
-      const heroHello = document.getElementById("hero-hello");
-      if (heroHello) heroHello.textContent = line;
-    } else if (sessionChip) {
-      sessionChip.textContent = "guest";
-    }
-  }
-
   function setText(id, value) {
     const el = typeof id === "string" ? document.getElementById(id) : id;
     if (el) el.textContent = value;
   }
 
+  function applySession() {
+    const s = session();
+    if (s?.email) {
+      if (sessionChip) sessionChip.textContent = firstName(s.email);
+      setText(hello, `${greeting(new Date())}, ${firstName(s.email)}`);
+    } else if (sessionChip) {
+      sessionChip.textContent = "guest";
+    }
+  }
+
   function tickClock() {
     const d = new Date();
-    const hh = pad(d.getHours());
-    const mm = pad(d.getMinutes());
-    const ss = pad(d.getSeconds());
-    const clock = `${hh}:${mm}`;
-    const date = d.toLocaleDateString(undefined, {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-    });
-    const greet = greeting(d);
+    const clock = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
     const nav = $("#nav-clock");
     if (nav) {
       nav.textContent = clock;
       nav.dateTime = d.toISOString();
     }
     setText("big-clock", clock);
-    setText("big-date", date);
-    setText("hero-clock", clock);
-    setText("hero-date", date);
-    if (!session()?.email) {
-      setText(hello, greet);
-      setText("hero-hello", greet);
-    }
+    setText("big-date", d.toLocaleDateString(undefined, {
+      weekday: "long", month: "long", day: "numeric",
+    }));
+    if (!session()?.email) setText(hello, greeting(d));
 
     const dayPct = ((d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds()) / 86400) * 100;
     const hourPct = ((d.getMinutes() * 60 + d.getSeconds()) / 3600) * 100;
@@ -105,26 +81,21 @@
     setText("day-label", `${Math.round(dayPct)}%`);
     setText("hour-label", hourName(d));
     setText("field-label", window.AetherField?.status() || "live");
-    setText("field-sub", `${ss}s · pointer + time`);
   }
 
   function openDoor() {
     door.hidden = false;
     $("#email").focus();
   }
-
   function closeDoor() {
     door.hidden = true;
     formError.textContent = "";
   }
-
   function showToast(msg) {
     toast.hidden = false;
     toast.textContent = msg;
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => {
-      toast.hidden = true;
-    }, 2600);
+    showToast._t = setTimeout(() => { toast.hidden = true; }, 2400);
   }
 
   $$("[data-open-door]").forEach((el) => el.addEventListener("click", openDoor));
@@ -146,11 +117,10 @@
       return;
     }
     localStorage.setItem(KEY, JSON.stringify({ email, at: Date.now() }));
-    formError.textContent = "";
     closeDoor();
     applySession();
     showToast(`You're in, ${firstName(email)}. Still on this machine.`);
-    document.getElementById("surface").scrollIntoView({ behavior: "smooth" });
+    document.getElementById("board").scrollIntoView({ behavior: "smooth" });
   });
 
   commandForm.addEventListener("submit", (e) => {
@@ -168,24 +138,62 @@
       window.location.href = url;
       return;
     }
-    commandNote.textContent = "This demo only leaves on a real URL. Stay a little.";
+    commandNote.textContent = "This demo only leaves on a real URL.";
   });
 
-  const cta = $$(".cta");
-  cta.forEach((btn) => {
-    btn.addEventListener("pointermove", (e) => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      const r = btn.getBoundingClientRect();
-      const x = (e.clientX - r.left - r.width / 2) * 0.18;
-      const y = (e.clientY - r.top - r.height / 2) * 0.22;
-      btn.style.setProperty("--mx", `${x}px`);
-      btn.style.setProperty("--my", `${y}px`);
+  const stage = $("#stage");
+  const flash = $("#flash");
+  const ripple = $("#ripple");
+  const ripples = [];
+  if (stage && flash) {
+    const rctx = ripple ? ripple.getContext("2d") : null;
+    function sizeRipple() {
+      if (!ripple) return;
+      const r = stage.getBoundingClientRect();
+      const dpr = Math.min(devicePixelRatio || 1, 1.5);
+      ripple.width = Math.floor(r.width * dpr);
+      ripple.height = Math.floor(r.height * dpr);
+      if (rctx) rctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    sizeRipple();
+    window.addEventListener("resize", sizeRipple, { passive: true });
+
+    let lastRipple = 0;
+    stage.addEventListener("pointermove", (e) => {
+      const box = stage.getBoundingClientRect();
+      const x = e.clientX - box.left;
+      const y = e.clientY - box.top;
+      flash.style.setProperty("--x", `${x}px`);
+      flash.style.setProperty("--y", `${y}px`);
+      setText("field-sub", `${Math.round(x)}, ${Math.round(y)}`);
+      const now = performance.now();
+      if (now - lastRipple > 70) {
+        ripples.push({ x, y, r: 8, life: 1 });
+        lastRipple = now;
+      }
     });
-    btn.addEventListener("pointerleave", () => {
-      btn.style.setProperty("--mx", "0px");
-      btn.style.setProperty("--my", "0px");
-    });
-  });
+
+    function drawRipple() {
+      if (!rctx || !ripple) return;
+      const box = stage.getBoundingClientRect();
+      rctx.clearRect(0, 0, box.width, box.height);
+      ripples.forEach((p, i) => {
+        p.r += 2.2;
+        p.life -= 0.03;
+        if (p.life <= 0) {
+          ripples.splice(i, 1);
+          return;
+        }
+        rctx.strokeStyle = `rgba(232, 168, 124, ${p.life * 0.45})`;
+        rctx.lineWidth = 1.2;
+        rctx.beginPath();
+        rctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        rctx.stroke();
+      });
+      requestAnimationFrame(drawRipple);
+    }
+    requestAnimationFrame(drawRipple);
+  }
 
   const seq = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
   const buf = [];
@@ -193,50 +201,12 @@
     buf.push(e.key);
     if (buf.length > seq.length) buf.shift();
     if (seq.every((k, i) => buf[i]?.toLowerCase() === k.toLowerCase())) {
-      window.AetherField?.intensify();
-      showToast("Compositor online. You found the rice.");
+      showToast("Cursor unlocked twice. You already have it.");
     }
-  });
-
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  $$("[data-tilt]").forEach((el) => {
-    el.addEventListener("pointermove", (e) => {
-      if (reduce) return;
-      const r = el.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width - 0.5;
-      const py = (e.clientY - r.top) / r.height - 0.5;
-      el.style.setProperty("--rx", `${(-py * 10).toFixed(2)}deg`);
-      el.style.setProperty("--ry", `${(px * 12).toFixed(2)}deg`);
-      el.style.setProperty("--lx", `${50 + px * 40}%`);
-      el.style.setProperty("--ly", `${50 + py * 40}%`);
-    });
-    el.addEventListener("pointerleave", () => {
-      el.style.setProperty("--rx", "0deg");
-      el.style.setProperty("--ry", "0deg");
-    });
-  });
-
-  const io = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add("in");
-        const name = entry.target.getAttribute("data-chapter");
-        if (name) window.AetherField?.setChapter(name);
-      });
-    },
-    { threshold: 0.42 }
-  );
-  $$("[data-chapter], .reveal").forEach((el) => {
-    io.observe(el);
-    const r = el.getBoundingClientRect();
-    if (r.top < innerHeight * 0.75 && r.bottom > 80) el.classList.add("in");
   });
 
   applySession();
   tickClock();
   setInterval(tickClock, 1000);
-
   if (new URLSearchParams(location.search).has("door")) openDoor();
 })();

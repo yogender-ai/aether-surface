@@ -10,6 +10,10 @@ Aether is a living start surface. The page *is* the product. The first screen is
 
 I also rejected React. I do not know it well enough to defend every line on a follow-up call. This is HTML, CSS, and two small scripts — the stack I already ship with.
 
+## Rebuild note
+
+Killed the flying-tile parallax and the left orb cards. New theme: zinc + copper + Syne. Cursor is now the motion language (dot, follow, magnetic, trail, board flashlight, click swirl). Native cursor on touch and reduced motion.
+
 ## Combo I shipped
 
 Researched 20 live sites and 30 starred repos, then rejected 4 combos:

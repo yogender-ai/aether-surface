@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark" />
-  <meta name="theme-color" content="#07080c" />
-  <meta name="description" content="Aether is a living start surface. Light that reacts to you. One field to type and leave. The page is the product." />
-  <title>Aether — a surface that breathes</title>
+  <meta name="theme-color" content="#111113" />
+  <meta name="description" content="Aether is a living start surface. One field to type and leave. The page is the product." />
+  <title>Aether - start here</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/main.css" />
   <script>
     const q = location.search;
@@ -23,153 +23,113 @@
 
   <canvas id="field" aria-hidden="true"></canvas>
   <div class="grain" aria-hidden="true"></div>
-  <div class="vignette" aria-hidden="true"></div>
-  <div class="progress" id="progress" aria-hidden="true"><i></i></div>
+
+  <div class="cursor" id="cursor" hidden aria-hidden="true">
+    <i class="cursor-dot"></i>
+    <i class="cursor-ring"></i>
+  </div>
 
   <header class="nav">
-    <a class="mark" href="#top" aria-label="Aether home">
-      <svg class="mark-svg" viewBox="0 0 32 32" aria-hidden="true">
-        <circle cx="16" cy="16" r="11" />
-        <circle class="mark-core" cx="16" cy="16" r="3.2" />
-      </svg>
-      <span>Aether</span>
-    </a>
+    <a class="mark" href="#top">Aether</a>
     <div class="nav-right">
-      <time class="nav-clock" id="nav-clock" datetime="">00:00</time>
-      <a class="nav-link" href="#surface">The surface</a>
-      <button class="nav-enter" type="button" data-open-door>Enter</button>
+      <time class="nav-clock" id="nav-clock">00:00</time>
+      <a class="nav-link" href="#board">Board</a>
+      <button class="nav-enter" type="button" data-open-door data-magnetic>Enter</button>
     </div>
   </header>
 
   <main id="main">
-    <section class="hero" id="top" data-chapter="fly">
-      <div class="hero-copy">
-        <p class="eyebrow">A start surface · running now</p>
-        <h1>
-          A surface<br />
-          that <em>breathes.</em>
-        </h1>
-        <p class="lede">
-          Not a wallpaper. A universe of live tiles you fly through —
-          then one keystroke to leave.
-        </p>
-        <div class="hero-actions">
-          <button class="cta" type="button" data-open-door>
-            <span>Enter Aether</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </button>
-          <a class="ghost" href="#surface">See it running</a>
-        </div>
-        <p class="honest">No waitlist. No invented users. The tiles behind this type are the product.</p>
+    <section class="hero" id="top">
+      <p class="kicker">Live now</p>
+      <h1>Start here.</h1>
+      <p class="lede">A start surface that reacts to your hand. Type a URL to leave.</p>
+      <div class="hero-actions">
+        <button class="cta" type="button" data-open-door data-magnetic>
+          Enter Aether
+        </button>
+        <a class="ghost" href="#board" data-magnetic>Open the board</a>
       </div>
-
-      <aside class="hero-portal" data-tilt aria-label="Live Aether surface">
-        <div class="stage-bar">
-          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span class="stage-title">Aether · live</span>
-          <span class="stage-chip">now</span>
-        </div>
-        <div class="portal-body">
-          <p class="hello" id="hero-hello">Good morning</p>
-          <p class="portal-clock" id="hero-clock">00:00</p>
-          <p class="portal-date" id="hero-date"></p>
-        </div>
-      </aside>
+      <p class="honest">No waitlist. No invented users. Nothing is sent anywhere.</p>
     </section>
 
-    <section class="surface reveal" id="surface" data-chapter="dock">
-      <header class="section-head">
-        <h2>This is not a screenshot.</h2>
-        <p class="section-copy">
-          The glass below is a live Aether surface. Time is real. The day ribbon is this hour.
-          The field is computed every frame from noise, clock, and your pointer — there is no video loop.
-        </p>
-      </header>
+    <section class="board-wrap" id="board">
+      <p class="kicker">The product</p>
+      <h2>Move across the board.</h2>
+      <p class="lede">Flashlight follows you. The meters lean toward the pointer. This is the surface, not a picture of one.</p>
 
-      <figure class="stage" id="stage" data-tilt>
-        <div class="stage-bar">
-          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span class="stage-title">Aether · surface</span>
+      <figure class="board" id="stage">
+        <div class="flash" id="flash" aria-hidden="true"></div>
+        <canvas class="ripple" id="ripple" aria-hidden="true"></canvas>
+        <div class="board-bar">
+          <span>Aether board</span>
           <span class="stage-chip" id="session-chip">guest</span>
         </div>
-        <div class="stage-body">
+        <div class="board-core">
           <p class="hello" id="hello">Good morning</p>
           <p class="big-clock" id="big-clock">00:00</p>
           <p class="big-date" id="big-date"></p>
           <form class="command" id="command-form" autocomplete="off">
             <label class="sr-only" for="command">Type a URL to leave</label>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.4"/><path d="m16 16 4.1 4.1"/></svg>
-            <input id="command" name="command" type="text" placeholder="Type a URL to leave, or stay" />
-            <button type="submit">Go</button>
+            <input id="command" name="command" type="text" placeholder="Type a URL to leave" />
+            <button type="submit" data-magnetic>Go</button>
           </form>
           <p class="command-note" id="command-note" role="status"></p>
           <div class="meters">
-            <article class="meter" data-tilt>
+            <article class="meter" data-magnetic>
               <header>This hour</header>
-              <strong id="hour-label">—</strong>
-              <div class="bar" aria-hidden="true"><span id="hour-bar"></span></div>
+              <strong id="hour-label">-</strong>
+              <div class="bar"><span id="hour-bar"></span></div>
             </article>
-            <article class="meter" data-tilt>
+            <article class="meter" data-magnetic>
               <header>Day used</header>
-              <strong id="day-label">—</strong>
-              <div class="bar" aria-hidden="true"><span id="day-bar"></span></div>
+              <strong id="day-label">-</strong>
+              <div class="bar"><span id="day-bar"></span></div>
             </article>
-            <article class="meter" data-tilt>
-              <header>Field</header>
-              <strong id="field-label">live</strong>
-              <p class="meter-sub" id="field-sub">pointer + time</p>
+            <article class="meter" data-magnetic>
+              <header>Pointer</header>
+              <strong id="field-label">ready</strong>
+              <p class="meter-sub" id="field-sub">move to light it</p>
             </article>
           </div>
         </div>
       </figure>
     </section>
 
-    <section class="beats reveal" id="why" data-chapter="constellation">
-      <header class="section-head">
-        <h2>Three decisions. No filler.</h2>
-      </header>
-      <ol class="beat-list">
-        <li data-tilt>
-          <div class="orb orb-a" aria-hidden="true"></div>
-          <h3>Alive, not looped</h3>
-          <p>A video repeats. You feel the seam. This field is new every frame, and rare events fire off-beat so the eye never settles.</p>
+    <section class="rules" id="why">
+      <h2>How it is built</h2>
+      <ul>
+        <li>
+          <strong>Quiet field</strong>
+          <span>No flying tiles. The background stays still so your hand can be the motion.</span>
         </li>
-        <li data-tilt>
-          <div class="orb orb-b" aria-hidden="true"></div>
-          <h3>One way out</h3>
-          <p>A start surface should not compete with the work. One command. Type a real URL and you leave.</p>
+        <li>
+          <strong>Cursor is the tool</strong>
+          <span>Dot, following ring, magnetic pull, a short trail, flashlight on the board, swirl on click.</span>
         </li>
-        <li data-tilt>
-          <div class="orb orb-c" aria-hidden="true"></div>
-          <h3>Honest materials</h3>
-          <p>No fabricated testimonials. No fake user counts. No borrowed logos. If it is not running here, it is not claimed.</p>
+        <li>
+          <strong>Honest copy</strong>
+          <span>No fake counts. No borrowed logos. If it is not running here, it is not claimed.</span>
         </li>
-      </ol>
+      </ul>
     </section>
 
-    <section class="close reveal" id="enter" data-chapter="horizon">
+    <section class="close" id="enter">
       <h2>Come in.</h2>
-      <p class="section-copy">
-        This is a local door for the demo. Nothing is sent anywhere.
-        Enter and the surface will greet you by the name in your email.
-      </p>
-      <button class="cta" type="button" data-open-door>
-        <span>Enter Aether</span>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </button>
+      <p class="lede">Local door. Email stays on this machine.</p>
+      <button class="cta" type="button" data-open-door data-magnetic>Enter Aether</button>
     </section>
   </main>
 
   <footer class="foot">
-    <p>Aether · a living start surface · built for Acdyon, track two.</p>
-    <p class="foot-note">Dark only. 390 and 1440. Scroll changes the universe. Pointer tilts the glass.</p>
+    <p>Aether · Acdyon track two</p>
+    <p>Custom cursor on desktop. Native cursor on touch and reduced motion.</p>
   </footer>
 
   <div class="door" id="door" hidden>
     <div class="door-backdrop" data-close-door></div>
     <div class="door-sheet" role="dialog" aria-modal="true" aria-labelledby="door-title">
-      <button class="door-x" type="button" data-close-door aria-label="Close">×</button>
-      <p class="eyebrow">Local door</p>
+      <button class="door-x" type="button" data-close-door aria-label="Close">x</button>
+      <p class="kicker">Local door</p>
       <h2 id="door-title">Enter Aether</h2>
       <p class="door-copy">Kept on this machine. We do not invent an account on a server we do not have.</p>
       <form id="door-form" novalidate>
@@ -179,14 +139,12 @@
         </label>
         <label>
           <span>Passphrase</span>
-          <input id="pass" name="pass" type="password" autocomplete="current-password" required minlength="6" placeholder="anything you will remember" />
+          <input id="pass" name="pass" type="password" autocomplete="current-password" required minlength="6" placeholder="six characters or more" />
         </label>
         <p class="form-error" id="form-error" role="alert"></p>
-        <button class="cta full" type="submit">
-          <span>Open the surface</span>
-        </button>
+        <button class="cta full" type="submit" data-magnetic>Open the surface</button>
       </form>
-      <p class="honest">Passphrase is checked for length only. It never leaves the tab.</p>
+      <p class="honest">Passphrase is checked for length only.</p>
     </div>
   </div>
 
@@ -197,21 +155,14 @@
       const n = new Date();
       const p = (v) => String(v).padStart(2, "0");
       const t = p(n.getHours()) + ":" + p(n.getMinutes());
-      ["nav-clock", "hero-clock", "big-clock"].forEach((id) => {
+      ["nav-clock", "big-clock"].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.textContent = t;
       });
-      const dateEl = document.getElementById("hero-date");
-      if (dateEl) {
-        dateEl.textContent = n.toLocaleDateString(undefined, {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-        });
-      }
     })();
   </script>
   <script src="js/field.js"></script>
+  <script src="js/cursor.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
