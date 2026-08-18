@@ -1,29 +1,29 @@
 # Decisions
 
-Track: **Part 2 — premium home page.** One track.
+Track: **Part 2 — the premium home page.** Not both. Not the scraper.
 
-## 1. Why this strategy
+## 1. Why this strategy over the obvious alternative
 
-I shipped **Afterglow**: near-black, one live product card in a slow indigo/rose halo. The interface is the hero. Atmosphere is the frame.
+The obvious homepage is a React/Framer landing with a looping video, fake logos, and “Join 12k teams.” I rejected that because the brief grades **honesty** and **motion restraint**.
 
-Rejected: flying-tile parallax (steals attention), custom cursors (the spec wants a native arrow), fake Test Command numbers (the brief grades honesty hardest). The glass card is the real Aether surface: this machine's clock, this hour, this day bar, a URL field.
+I shipped **Afterglow**: void `#0A0A0B`, one live product card in an indigo `#6E5BFF` / rose `#FF6F91` halo. The glass card *is* the product — this machine’s clock, this hour, this day used, one URL field. No invented test counts.
 
-Stack is vanilla HTML/CSS/JS so I can walk every line.
+The one pointer move is a 480px / 60px-blur / 12% glow on `--x` / `--y`. Native arrow. No custom cursor, no flying tiles. Vanilla HTML/CSS/JS so I can walk every line on the call.
 
-## 2. Time-limit trade-off
+## 2. One trade-off under the time limit
 
-Local door only (`localStorage`). With a week: real auth and a saved board layout.
+Local door only (`localStorage`, two steps, nothing posted). With a real week I would add a tiny backend and persist board prefs.
 
 Dark only. The brief says half-dark is worse than none.
 
-Signature motion is one glow: `--x/--y` from `pointermove`, opacity 12% to 4% over the first 60vh. Nothing else follows the pointer.
+## 3. Where I used AI, and what I verified
 
-## 3. AI use
+Grok built Afterglow from a written spec. I then:
 
-Grok implemented Afterglow from a written spec. I then:
+- Removed every fake metric, logo, and testimonial.
+- Checked 390px and 1440px: no horizontal scroll, glow off on coarse pointers.
+- Locked glow numbers (480 / 60 / 12→4).
+- Froze hue rotation and boot under `prefers-reduced-motion`.
+- Added the `midnight` key buffer as the optional easter egg.
 
-- Kept every number on the card real (no invented test counts).
-- Locked the glow to 480px / 60px blur / 12% opacity.
-- Disabled the tracking glow on coarse pointers.
-- Froze hue rotation under `prefers-reduced-motion`.
-- Added the `midnight` key buffer as the easter egg.
+If asked about any file, I can defend it without “the AI suggested it.”

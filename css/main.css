@@ -44,7 +44,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-html { scroll-behavior: smooth; scroll-snap-type: y proximity; }
+html { scroll-behavior: smooth; scroll-snap-type: y proximity; scroll-padding-top: 0; }
 html, body { scrollbar-width: none; }
 html::-webkit-scrollbar,
 body::-webkit-scrollbar { display: none; }
@@ -131,7 +131,8 @@ a { color: inherit; text-decoration: none; }
     radial-gradient(70% 80% at 40% 20%, color-mix(in srgb, var(--g1) 22%, transparent), transparent 50%),
     #0a0a0b;
   box-shadow: 0 -40px 120px color-mix(in srgb, var(--g1) 18%, transparent);
-  transform: translateY(var(--earth-y)) scale(var(--earth));
+  transform: translate3d(0, var(--earth-y), 0) scale(var(--earth));
+  will-change: transform;
   opacity: 0.95;
 }
 
@@ -157,6 +158,7 @@ body:not(.booting) .boot { opacity: 0; visibility: hidden; pointer-events: none;
   width: 7px; height: 7px; border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.28);
   background: transparent;
+  transition: height 0.35s cubic-bezier(0.22, 1, 0.36, 1), background 0.35s ease, border-color 0.35s ease;
 }
 .scenes a.on {
   background: linear-gradient(180deg, var(--g1), var(--g2));
@@ -429,17 +431,17 @@ body.scrolled .nav {
 .line:hover strong { color: #fff; }
 
 .block {
+  --vis: 0;
   width: min(680px, calc(100% - 32px));
   margin: 0 auto;
   min-height: 100dvh;
   display: flex; flex-direction: column; justify-content: center;
   padding: 12vh 0;
   text-align: center;
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.75s ease, transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: max(0.08, var(--vis));
+  transform: translate3d(0, calc((1 - var(--vis)) * 28px), 0);
 }
-.block.in { opacity: 1; transform: none; }
+.block.in { --vis: 1; }
 .block.air h2 { margin-top: 52px; }
 .block h2 {
   margin: 0.55rem 0 0;
@@ -562,7 +564,7 @@ body.scrolled .nav {
   html { scroll-behavior: auto; scroll-snap-type: none; }
   body.hue-live { animation: none; }
   .glass, .cta, .block, .line, .horizon { transition: none; transform: none; }
-  .block, .stats article, .line { opacity: 1; transform: none; animation: none; }
+  .block, .stats article, .line { opacity: 1; transform: none; animation: none; --vis: 1; }
   .glass {
     -webkit-mask-image: none;
     mask-image: none;

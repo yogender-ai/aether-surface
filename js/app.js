@@ -24,24 +24,47 @@
   /* Glow 12% → 4% over the first 60vh. Hue cycle speeds a little with scroll. */
   const scenes = $$(".scene");
   const dots = $$(".scenes a");
-  function fadeGlow() {
+  const want = { glow: 0.12, earth: 1, earthY: 0, grain: 0.03, hue: 16 };
+  const cur = { ...want };
+
+  function readScroll() {
     const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
     const p = Math.min(1, window.scrollY / (innerHeight * 0.6));
     const all = Math.min(1, window.scrollY / max);
-    root.style.setProperty("--glow", String(0.12 - p * 0.08));
-    root.style.setProperty("--hue-ms", `${Math.max(9, 16 - p * 5)}s`);
-    root.style.setProperty("--grain", String(0.03 + p * 0.015));
-    root.style.setProperty("--earth", String(1 + all * 0.12));
-    root.style.setProperty("--earth-y", `${all * 40}px`);
+    want.glow = 0.12 - p * 0.08;
+    want.hue = 16 - p * 5;
+    want.grain = 0.03 + p * 0.015;
+    want.earth = 1 + all * 0.1;
+    want.earthY = all * 28;
     document.body.classList.toggle("scrolled", window.scrollY > 24);
     let active = 0;
     scenes.forEach((el, i) => {
-      if (el.getBoundingClientRect().top < innerHeight * 0.45) active = i;
+      if (el.getBoundingClientRect().top < innerHeight * 0.48) active = i;
     });
     dots.forEach((d, i) => d.classList.toggle("on", i === active));
   }
-  fadeGlow();
-  window.addEventListener("scroll", fadeGlow, { passive: true });
+
+  function easeScroll() {
+    cur.glow += (want.glow - cur.glow) * 0.08;
+    cur.earth += (want.earth - cur.earth) * 0.07;
+    cur.earthY += (want.earthY - cur.earthY) * 0.07;
+    cur.grain += (want.grain - cur.grain) * 0.08;
+    cur.hue += (want.hue - cur.hue) * 0.06;
+    root.style.setProperty("--glow", cur.glow.toFixed(4));
+    root.style.setProperty("--earth", cur.earth.toFixed(4));
+    root.style.setProperty("--earth-y", `${cur.earthY.toFixed(2)}px`);
+    root.style.setProperty("--grain", cur.grain.toFixed(4));
+    root.style.setProperty("--hue-ms", `${cur.hue.toFixed(2)}s`);
+    if (!reduce) requestAnimationFrame(easeScroll);
+  }
+
+  readScroll();
+  window.addEventListener("scroll", readScroll, { passive: true });
+  if (!reduce) requestAnimationFrame(easeScroll);
+  else {
+    root.style.setProperty("--glow", String(want.glow));
+    root.style.setProperty("--earth", String(want.earth));
+  }
 
   /* Easter egg: last 8 keys spell midnight. */
   const buf = [];
@@ -234,8 +257,12 @@
   });
 
   const io = new IntersectionObserver((entries) => {
-    entries.forEach((en) => { if (en.isIntersecting) en.target.classList.add("in"); });
-  }, { threshold: 0.18, rootMargin: "0px 0px -30% 0px" });
+    entries.forEach((en) => {
+      const r = Math.min(1, Math.max(0, en.intersectionRatio / 0.55));
+      en.target.style.setProperty("--vis", r.toFixed(3));
+      if (en.intersectionRatio > 0.22) en.target.classList.add("in");
+    });
+  }, { threshold: [0, 0.12, 0.25, 0.4, 0.55, 0.7, 0.85, 1] });
   $$(".fade, .glass").forEach((el) => io.observe(el));
   const glass = $("#board");
   if (glass) {
