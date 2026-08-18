@@ -2,7 +2,9 @@
 
 A living start surface. Built as **Part 2** of the Acdyon Technologies frontend challenge.
 
-Live: (filled after Vercel deploy)
+Live: https://aether-surface.vercel.app
+
+Repo: https://github.com/yogender-ai/aether-surface
 
 ## What it is
 
