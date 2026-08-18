@@ -6,7 +6,7 @@ Track: **Part 2 — premium home page.** I did not do the scraper. One track, go
 
 The obvious homepage is a React/Framer landing with a looping video, three fake logos, and a “Join 12k teams” line. I rejected that on two grounds the brief itself grades: **honesty** and **motion restraint**.
 
-Aether is a living start surface. The page *is* the product. The background is a canvas field computed each frame from time-of-day color, value noise, and the pointer — not a video. Rare events (bloom, filament, hue, pulse) fire on an irregular 0.9–5.1s clock so the eye never learns a loop. The glass stage shows a real clock, a real day ribbon, and a command that only leaves on a real URL.
+Aether is a living start surface. The page *is* the product. The first screen is a 3D compositor universe — receding glass tiles, a star volume, and a cosmic web — not a 2020 gradient blob. The camera flies forward; meteors, novas, and tile-rushes fire off-beat. A live portal (real clock) sits in the hero so the product is visible in the first three seconds. The glass stage below still holds the command that only leaves on a real URL.
 
 I also rejected React. I do not know it well enough to defend every line on a follow-up call. This is HTML, CSS, and two small scripts — the stack I already ship with.
 

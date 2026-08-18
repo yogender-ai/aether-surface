@@ -56,10 +56,18 @@
     const s = session();
     if (s?.email) {
       sessionChip.textContent = firstName(s.email);
-      hello.textContent = `${greeting(new Date())}, ${firstName(s.email)}`;
-    } else {
+      const line = `${greeting(new Date())}, ${firstName(s.email)}`;
+      if (hello) hello.textContent = line;
+      const heroHello = document.getElementById("hero-hello");
+      if (heroHello) heroHello.textContent = line;
+    } else if (sessionChip) {
       sessionChip.textContent = "guest";
     }
+  }
+
+  function setText(id, value) {
+    const el = typeof id === "string" ? document.getElementById(id) : id;
+    if (el) el.textContent = value;
   }
 
   function tickClock() {
@@ -68,25 +76,36 @@
     const mm = pad(d.getMinutes());
     const ss = pad(d.getSeconds());
     const clock = `${hh}:${mm}`;
-    const nav = $("#nav-clock");
-    nav.textContent = clock;
-    nav.dateTime = d.toISOString();
-    $("#big-clock").textContent = `${hh}:${mm}`;
-    $("#big-date").textContent = d.toLocaleDateString(undefined, {
+    const date = d.toLocaleDateString(undefined, {
       weekday: "long",
       month: "long",
       day: "numeric",
     });
-    if (!session()?.email) hello.textContent = greeting(d);
+    const greet = greeting(d);
+    const nav = $("#nav-clock");
+    if (nav) {
+      nav.textContent = clock;
+      nav.dateTime = d.toISOString();
+    }
+    setText("big-clock", clock);
+    setText("big-date", date);
+    setText("hero-clock", clock);
+    setText("hero-date", date);
+    if (!session()?.email) {
+      setText(hello, greet);
+      setText("hero-hello", greet);
+    }
 
     const dayPct = ((d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds()) / 86400) * 100;
     const hourPct = ((d.getMinutes() * 60 + d.getSeconds()) / 3600) * 100;
-    $("#day-bar").style.width = `${dayPct}%`;
-    $("#hour-bar").style.width = `${hourPct}%`;
-    $("#day-label").textContent = `${Math.round(dayPct)}%`;
-    $("#hour-label").textContent = hourName(d);
-    $("#field-label").textContent = window.AetherField?.status() || "live";
-    $("#field-sub").textContent = `${ss}s · pointer + time`;
+    const dayBar = $("#day-bar");
+    const hourBar = $("#hour-bar");
+    if (dayBar) dayBar.style.width = `${dayPct}%`;
+    if (hourBar) hourBar.style.width = `${hourPct}%`;
+    setText("day-label", `${Math.round(dayPct)}%`);
+    setText("hour-label", hourName(d));
+    setText("field-label", window.AetherField?.status() || "live");
+    setText("field-sub", `${ss}s · pointer + time`);
   }
 
   function openDoor() {

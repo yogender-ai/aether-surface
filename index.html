@@ -42,23 +42,38 @@
 
   <main id="main">
     <section class="hero" id="top">
-      <p class="eyebrow">A start surface · running now</p>
-      <h1>
-        A surface<br />
-        that <em>breathes.</em>
-      </h1>
-      <p class="lede">
-        Most new tabs are dead wallpaper. This one is a living layer —
-        light that reacts to you, a clock for this hour, then one keystroke to leave.
-      </p>
-      <div class="hero-actions">
-        <button class="cta" type="button" data-open-door>
-          <span>Enter Aether</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </button>
-        <a class="ghost" href="#surface">See it running</a>
+      <div class="hero-copy">
+        <p class="eyebrow">A start surface · running now</p>
+        <h1>
+          A surface<br />
+          that <em>breathes.</em>
+        </h1>
+        <p class="lede">
+          Not a wallpaper. A universe of live tiles you fly through —
+          then one keystroke to leave.
+        </p>
+        <div class="hero-actions">
+          <button class="cta" type="button" data-open-door>
+            <span>Enter Aether</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+          <a class="ghost" href="#surface">See it running</a>
+        </div>
+        <p class="honest">No waitlist. No invented users. The tiles behind this type are the product.</p>
       </div>
-      <p class="honest">No waitlist. No invented users. The field behind this type is the product.</p>
+
+      <aside class="hero-portal" aria-label="Live Aether surface">
+        <div class="stage-bar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="stage-title">Aether · live</span>
+          <span class="stage-chip">now</span>
+        </div>
+        <div class="portal-body">
+          <p class="hello" id="hero-hello">Good morning</p>
+          <p class="portal-clock" id="hero-clock">00:00</p>
+          <p class="portal-date" id="hero-date"></p>
+        </div>
+      </aside>
     </section>
 
     <section class="surface" id="surface">
@@ -179,6 +194,25 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
+  <script>
+    (function () {
+      const n = new Date();
+      const p = (v) => String(v).padStart(2, "0");
+      const t = p(n.getHours()) + ":" + p(n.getMinutes());
+      ["nav-clock", "hero-clock", "big-clock"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = t;
+      });
+      const dateEl = document.getElementById("hero-date");
+      if (dateEl) {
+        dateEl.textContent = n.toLocaleDateString(undefined, {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        });
+      }
+    })();
+  </script>
   <script src="js/field.js"></script>
   <script src="js/app.js"></script>
 </body>

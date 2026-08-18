@@ -99,9 +99,7 @@ a { color: inherit; }
 }
 
 .vignette {
-  background:
-    radial-gradient(90% 70% at 50% 30%, transparent 20%, rgba(7, 8, 12, 0.28) 70%, rgba(7, 8, 12, 0.72) 100%),
-    linear-gradient(180deg, rgba(7, 8, 12, 0.35), transparent 18%, transparent 72%, rgba(7, 8, 12, 0.88));
+  background: linear-gradient(180deg, rgba(5, 7, 12, 0.42), transparent 14%, transparent 82%, rgba(5, 7, 12, 0.5));
 }
 
 .nav,
@@ -178,12 +176,22 @@ main,
   min-height: calc(100svh - var(--nav-h));
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: 8vh var(--pad) 10vh;
-  max-width: calc(var(--max) + var(--pad) * 2);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 7vh var(--pad) 5vh;
+  max-width: none;
 }
 
-.hero > * {
+.hero-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-copy > * {
   animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .hero .eyebrow { animation-delay: 0.05s; }
@@ -191,6 +199,7 @@ main,
 .hero .lede { animation-delay: 0.26s; }
 .hero .hero-actions { animation-delay: 0.38s; }
 .hero .honest { animation-delay: 0.5s; }
+.hero-portal { animation: rise 1s cubic-bezier(0.22, 1, 0.36, 1) 0.45s both; }
 
 @keyframes rise {
   from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
@@ -217,9 +226,9 @@ main,
 }
 
 .hero h1 {
-  font-size: clamp(3.4rem, 3rem + 8vw, 8.6rem);
-  max-width: 12ch;
-  text-shadow: 0 0 90px rgba(92, 225, 230, 0.12);
+  font-size: clamp(3.4rem, 2.4rem + 7vw, 7.6rem);
+  max-width: 14ch;
+  text-shadow: 0 10px 60px rgba(5, 7, 12, 0.55);
 }
 
 .hero h1 em {
@@ -236,12 +245,49 @@ main,
   line-height: 1.6;
 }
 
-.lede { margin: 1.6rem 0 2rem; }
+.lede { margin: 1.4rem auto 1.8rem; }
+
+.hero-portal {
+  width: min(34rem, 92vw);
+  margin-top: 4.2vh;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(8, 11, 16, 0.62);
+  backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(92, 225, 230, 0.08),
+    0 0 60px rgba(92, 225, 230, 0.06);
+  transform: perspective(1200px) rotateX(7deg);
+  transform-origin: center bottom;
+}
+
+.portal-body {
+  padding: 1.15rem 1.2rem 1.3rem;
+}
+
+.portal-clock {
+  margin: 0.15rem 0 0;
+  font-family: var(--serif);
+  font-size: clamp(2.6rem, 6vw, 4.2rem);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.portal-date {
+  margin: 0.4rem 0 0;
+  color: var(--ink);
+  opacity: 0.72;
+  font-size: 0.92rem;
+}
 
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 1rem 1.4rem;
 }
 
@@ -616,8 +662,9 @@ main,
   .hero {
     min-height: auto;
     justify-content: flex-start;
-    padding: 16vh var(--pad) 8vh;
+    padding: 12vh var(--pad) 6vh;
   }
+  .hero-portal { transform: none; margin-top: 2.4rem; }
   .foot { flex-direction: column; }
 }
 
@@ -630,8 +677,10 @@ main,
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .cta { transition: none; transform: none; }
-  .hero > * { animation: none; }
+  .hero-copy > *,
+  .hero-portal { animation: none; }
 }
 
-html.still .hero > * { animation: none; }
+html.still .hero-copy > *,
+html.still .hero-portal { animation: none; }
 html.door-on .door[hidden] { display: grid; }

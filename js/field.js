@@ -1,5 +1,6 @@
-/* One motion system: a living color field. No video. No looped GIF.
-   Every frame is time + noise + pointer. Events fire on an irregular clock. */
+/* One motion system: a 3D universe of compositor tiles.
+   Not a 2020 gradient blob. Windows recede in perspective, stars sit in
+   volume, filaments snap between nodes, events fire off-beat. */
 (() => {
   const canvas = document.getElementById("field");
   if (!canvas) return;
@@ -12,49 +13,298 @@
     h: 0,
     dpr: 1,
     t0: performance.now(),
-    mx: 0.5,
-    my: 0.38,
-    tx: 0.5,
-    ty: 0.38,
-    hueShift: 0,
-    bloom: 0,
-    pulse: 0,
+    mx: 0,
+    my: 0,
+    tx: 0,
+    ty: 0,
+    camZ: 0,
+    rush: 0,
+    flash: 0,
+    hue: 0,
     nextEvent: 0,
-    filament: null,
-    particles: [],
+    windows: [],
+    stars: [],
+    links: [],
+    meteors: [],
+    rings: [],
     running: true,
   };
 
-  function hash(x, y) {
-    const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
-    return n - Math.floor(n);
+  function rnd(a, b) {
+    return a + Math.random() * (b - a);
   }
 
-  function noise(x, y) {
-    const ix = Math.floor(x);
-    const iy = Math.floor(y);
-    const fx = x - ix;
-    const fy = y - iy;
-    const ux = fx * fx * (3 - 2 * fx);
-    const uy = fy * fy * (3 - 2 * fy);
-    const a = hash(ix, iy);
-    const b = hash(ix + 1, iy);
-    const c = hash(ix, iy + 1);
-    const d = hash(ix + 1, iy + 1);
-    return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy;
+  function seed() {
+    const tiles = [];
+    const cols = state.w < 700 ? 5 : 7;
+    const rows = state.w < 700 ? 3 : 4;
+    const depths = state.w < 700 ? 4 : 6;
+    for (let d = 0; d < depths; d++) {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          tiles.push({
+            x: (c - (cols - 1) / 2) * 168 + rnd(-18, 18),
+            y: (r - 1.15) * 108 + d * 16 + rnd(-10, 10),
+            z: 220 + d * 230 + rnd(0, 90),
+            bw: rnd(118, 168),
+            bh: rnd(72, 104),
+            pulse: Math.random(),
+            kind: Math.random() < 0.18 ? "hot" : "cool",
+            lit: Math.random(),
+          });
+        }
+      }
+    }
+    for (let i = 0; i < 16; i++) {
+      tiles.push({
+        x: rnd(-720, 720),
+        y: rnd(-280, 360),
+        z: rnd(260, 1680),
+        bw: rnd(90, 150),
+        bh: rnd(60, 96),
+        pulse: Math.random(),
+        kind: Math.random() < 0.4 ? "hot" : "cool",
+        lit: Math.random(),
+      });
+    }
+    state.windows = tiles;
+
+    const starN = Math.round(Math.min(900, (state.w * state.h) / 2200));
+    state.stars = Array.from({ length: starN }, () => ({
+      x: rnd(-1400, 1400),
+      y: rnd(-900, 900),
+      z: rnd(80, 2000),
+      a: rnd(0.25, 1),
+      s: rnd(0.6, 2.1),
+    }));
+
+    state.links = [];
+    for (let i = 0; i < tiles.length; i++) {
+      for (let j = i + 1; j < tiles.length; j++) {
+        const a = tiles[i];
+        const b = tiles[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dz = (a.z - b.z) * 0.35;
+        const dist = Math.hypot(dx, dy, dz);
+        if (dist < 240 && Math.random() < 0.22) {
+          state.links.push({ i, j, a: rnd(0.08, 0.22) });
+        }
+      }
+    }
   }
 
-  function hourPalette() {
-    const h = new Date().getHours() + new Date().getMinutes() / 60;
-    if (h < 6) return { a: [48, 72, 160], b: [120, 80, 210], c: [30, 120, 150] };
-    if (h < 10) return { a: [210, 110, 90], b: [80, 170, 210], c: [230, 160, 80] };
-    if (h < 17) return { a: [30, 190, 195], b: [110, 120, 240], c: [20, 110, 170] };
-    if (h < 20) return { a: [230, 100, 80], b: [140, 80, 210], c: [80, 100, 190] };
-    return { a: [40, 210, 215], b: [130, 100, 240], c: [20, 90, 160] };
+  function project(x, y, z) {
+    const zz = z - state.camZ;
+    if (zz < 40) return null;
+    const f = 720 / zz;
+    return {
+      x: state.w * 0.5 + (x + state.mx) * f,
+      y: state.h * 0.42 + (y + state.my) * f,
+      s: f,
+      z: zz,
+    };
+  }
+
+  function recycle(p, far) {
+    p.z = state.camZ + far + rnd(0, 80);
+  }
+
+  function schedule(now) {
+    state.nextEvent = now + 700 + Math.random() * 3400;
+  }
+
+  function fireEvent() {
+    const kind = ["meteor", "nova", "rush", "wake", "hue"][(Math.random() * 5) | 0];
+    if (kind === "meteor") {
+      state.meteors.push({
+        x: rnd(-800, 800),
+        y: rnd(-400, 80),
+        z: state.camZ + rnd(400, 900),
+        vx: rnd(-14, 14),
+        vy: rnd(6, 16),
+        vz: rnd(-18, -8),
+        life: 1,
+      });
+    }
+    if (kind === "nova") {
+      const host = state.windows[(Math.random() * state.windows.length) | 0];
+      state.rings.push({ x: host.x, y: host.y, z: host.z, r: 4, life: 1 });
+      state.flash = 0.55;
+    }
+    if (kind === "rush") {
+      const host = state.windows[(Math.random() * state.windows.length) | 0];
+      host.z = state.camZ + 180;
+      host.lit = 1;
+      state.rush = 1;
+    }
+    if (kind === "wake") {
+      state.windows.forEach((w) => {
+        if (Math.random() < 0.12) w.lit = 1;
+      });
+    }
+    if (kind === "hue") {
+      state.hue = 1;
+      document.documentElement.style.setProperty(
+        "--accent",
+        Math.random() > 0.5 ? "#8b7cff" : "#5ce1e6"
+      );
+    }
+  }
+
+  function drawWindow(w, p, t) {
+    const scale = state.w < 700 ? 0.2 : 0.3;
+    const width = w.bw * p.s * scale;
+    const height = w.bh * p.s * scale;
+    if (width < 8 || height < 5) return;
+    const x = p.x - width / 2;
+    const y = p.y - height / 2;
+    const depth = Math.max(0, 1 - p.z / 1900);
+    const flicker = 0.62 + 0.38 * Math.sin(t * 1.4 + w.pulse * 12);
+    const hot = w.kind === "hot";
+    const r = hot ? 168 : 80;
+    const g = hot ? 120 : 232;
+    const b = hot ? 255 : 236;
+    const alpha = (0.16 + depth * 0.38 + w.lit * 0.28) * flicker;
+    const radius = Math.min(14, width * 0.1);
+
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, width, height, radius);
+    else ctx.rect(x, y, width, height);
+    ctx.fillStyle = `rgba(7, 12, 22, ${0.32 + depth * 0.38})`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+    ctx.lineWidth = Math.max(0.8, 1.8 * depth);
+    ctx.stroke();
+
+    if (width > 26) {
+      const sheen = ctx.createLinearGradient(x, y, x, y + height);
+      sheen.addColorStop(0, `rgba(${r},${g},${b},${0.1 + w.lit * 0.14})`);
+      sheen.addColorStop(0.45, "rgba(255,255,255,0)");
+      ctx.fillStyle = sheen;
+      ctx.fill();
+      ctx.fillStyle = `rgba(${r},${g},${b},${0.1 + w.lit * 0.18})`;
+      ctx.fillRect(x + 5, y + 5, width - 10, Math.max(4, height * 0.15));
+    }
+  }
+
+  function frame(now) {
+    const t = (now - state.t0) / 1000;
+    state.mx += (state.tx - state.mx) * 0.04;
+    state.my += (state.ty - state.my) * 0.04;
+    state.rush *= 0.94;
+    state.flash *= 0.92;
+    state.hue *= 0.97;
+    state.camZ += 0.55 + state.rush * 4;
+
+    if (!reduced && now >= state.nextEvent) {
+      fireEvent();
+      schedule(now);
+    }
+
+    ctx.fillStyle = "#05070c";
+    ctx.fillRect(0, 0, state.w, state.h);
+
+    const nebula = ctx.createRadialGradient(
+      state.w * (0.5 + state.mx * 0.0004),
+      state.h * 0.38,
+      40,
+      state.w * 0.5,
+      state.h * 0.45,
+      Math.max(state.w, state.h) * 0.7
+    );
+    nebula.addColorStop(0, state.hue > 0.3 ? "rgba(90,70,180,0.16)" : "rgba(20,90,130,0.16)");
+    nebula.addColorStop(0.45, "rgba(20,40,90,0.08)");
+    nebula.addColorStop(1, "rgba(5,7,12,0)");
+    ctx.fillStyle = nebula;
+    ctx.fillRect(0, 0, state.w, state.h);
+
+    ctx.globalCompositeOperation = "lighter";
+    for (const s of state.stars) {
+      if (s.z - state.camZ < 40) recycle(s, 1900);
+      const p = project(s.x, s.y, s.z);
+      if (!p) continue;
+      const tw = 0.55 + 0.45 * Math.sin(t * 3 + s.x);
+      ctx.fillStyle = `rgba(220, 235, 255, ${s.a * tw * Math.min(1, p.s)})`;
+      ctx.fillRect(p.x, p.y, s.s * p.s * 0.18, s.s * p.s * 0.18);
+    }
+
+    ctx.globalCompositeOperation = "source-over";
+    for (const link of state.links) {
+      const a = state.windows[link.i];
+      const b = state.windows[link.j];
+      const pa = project(a.x, a.y, a.z);
+      const pb = project(b.x, b.y, b.z);
+      if (!pa || !pb) continue;
+      ctx.strokeStyle = `rgba(120, 200, 230, ${link.a * (0.35 + state.flash)})`;
+      ctx.lineWidth = 0.7;
+      ctx.beginPath();
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(pb.x, pb.y);
+      ctx.stroke();
+    }
+
+    const ordered = state.windows
+      .map((w) => {
+        if (w.z - state.camZ < 70) recycle(w, 1650);
+        w.lit *= 0.97;
+        return { w, p: project(w.x, w.y, w.z) };
+      })
+      .filter((d) => d.p)
+      .sort((a, b) => b.p.z - a.p.z);
+
+    for (const d of ordered) drawWindow(d.w, d.p, t);
+
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = state.meteors.length - 1; i >= 0; i--) {
+      const m = state.meteors[i];
+      m.x += m.vx;
+      m.y += m.vy;
+      m.z += m.vz;
+      m.life -= 0.016;
+      const p = project(m.x, m.y, m.z);
+      const p2 = project(m.x - m.vx * 6, m.y - m.vy * 6, m.z - m.vz * 6);
+      if (p && p2) {
+        ctx.strokeStyle = `rgba(200, 240, 255, ${0.7 * m.life})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(p2.x, p2.y);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      }
+      if (m.life <= 0) state.meteors.splice(i, 1);
+    }
+
+    for (let i = state.rings.length - 1; i >= 0; i--) {
+      const ring = state.rings[i];
+      ring.r += 7;
+      ring.life -= 0.02;
+      const p = project(ring.x, ring.y, ring.z);
+      if (p) {
+        ctx.strokeStyle = `rgba(160, 210, 255, ${0.35 * ring.life})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, ring.r * p.s * 0.12, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      if (ring.life <= 0) state.rings.splice(i, 1);
+    }
+
+    if (state.flash > 0.02) {
+      ctx.fillStyle = `rgba(180, 220, 255, ${state.flash * 0.08})`;
+      ctx.fillRect(0, 0, state.w, state.h);
+    }
+    ctx.globalCompositeOperation = "source-over";
+  }
+
+  function tick(now) {
+    if (!state.running) return;
+    frame(now);
+    requestAnimationFrame(tick);
   }
 
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.6);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     state.w = window.innerWidth;
     state.h = window.innerHeight;
     state.dpr = dpr;
@@ -63,138 +313,25 @@
     canvas.style.width = state.w + "px";
     canvas.style.height = state.h + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    seedParticles();
-  }
-
-  function seedParticles() {
-    const count = reduced ? 0 : Math.round((state.w * state.h) / 14000);
-    state.particles = Array.from({ length: Math.max(80, Math.min(count, 220)) }, () => ({
-      x: Math.random() * state.w,
-      y: Math.random() * state.h,
-      s: 0.5 + Math.random() * 1.6,
-      a: 0.12 + Math.random() * 0.35,
-    }));
-  }
-
-  function scheduleEvent(now) {
-    state.nextEvent = now + 900 + Math.random() * 4200;
-  }
-
-  function fireEvent() {
-    const kind = ["bloom", "filament", "hue", "pulse"][(Math.random() * 4) | 0];
-    if (kind === "bloom") state.bloom = 1;
-    if (kind === "hue") state.hueShift = 1;
-    if (kind === "pulse") state.pulse = 1;
-    if (kind === "filament") {
-      const edge = Math.random();
-      const x0 = edge < 0.5 ? (edge < 0.25 ? 0 : state.w) : Math.random() * state.w;
-      const y0 = edge >= 0.5 ? (edge < 0.75 ? 0 : state.h) : Math.random() * state.h;
-      const x1 = state.w * (0.25 + Math.random() * 0.5);
-      const y1 = state.h * (0.2 + Math.random() * 0.45);
-      const x2 = Math.random() * state.w;
-      const y2 = Math.random() * state.h;
-      state.filament = { x0, y0, x1, y1, x2, y2, life: 1 };
-    }
-    document.documentElement.style.setProperty(
-      "--accent",
-      state.hueShift > 0.5 ? "#8b7cff" : "#5ce1e6"
-    );
-  }
-
-  function drawBlob(x, y, r, color, alpha) {
-    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, `rgba(${color[0]},${color[1]},${color[2]},${alpha})`);
-    g.addColorStop(1, `rgba(${color[0]},${color[1]},${color[2]},0)`);
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  function tick(now) {
-    if (!state.running) return;
-    const t = (now - state.t0) / 1000;
-    state.mx += (state.tx - state.mx) * 0.045;
-    state.my += (state.ty - state.my) * 0.045;
-    state.bloom *= 0.96;
-    state.hueShift *= 0.975;
-    state.pulse *= 0.94;
-
-    if (!reduced && now >= state.nextEvent) {
-      fireEvent();
-      scheduleEvent(now);
-    }
-
-    const pal = hourPalette();
-    ctx.fillStyle = "#07080c";
-    ctx.fillRect(0, 0, state.w, state.h);
-
-    ctx.globalCompositeOperation = "lighter";
-
-    const blobs = [
-      { c: pal.a, px: 0.28, py: 0.42, s: 0.13, ph: 0.0 },
-      { c: pal.b, px: 0.72, py: 0.26, s: 0.1, ph: 1.7 },
-      { c: pal.c, px: 0.58, py: 0.7, s: 0.09, ph: 3.1 },
-      { c: pal.a, px: 0.12, py: 0.18, s: 0.07, ph: 4.4 },
-    ];
-
-    blobs.forEach((b, i) => {
-      const nx = noise(t * b.s + i, 2.2) - 0.5;
-      const ny = noise(4.1, t * b.s + i) - 0.5;
-      const x = (b.px + Math.sin(t * b.s + b.ph) * 0.1 + nx * 0.14) * state.w;
-      const y = (b.py + Math.cos(t * b.s * 0.85 + b.ph) * 0.08 + ny * 0.12) * state.h;
-      const r = Math.max(state.w, state.h) * (0.42 + state.bloom * 0.16 + state.pulse * 0.08);
-      const alpha = 0.3 + state.bloom * 0.16;
-      drawBlob(x, y, r, b.c, alpha);
-    });
-
-    const lx = state.mx * state.w;
-    const ly = state.my * state.h;
-    drawBlob(lx, ly, Math.max(state.w, state.h) * 0.28, [170, 240, 245], 0.14 + state.pulse * 0.1);
-
-    if (state.filament) {
-      const f = state.filament;
-      ctx.strokeStyle = `rgba(200, 240, 255, ${0.18 * f.life})`;
-      ctx.lineWidth = 1.2 + 2 * f.life;
-      ctx.shadowColor = "rgba(92, 225, 230, 0.55)";
-      ctx.shadowBlur = 18;
-      ctx.beginPath();
-      ctx.moveTo(f.x0, f.y0);
-      ctx.quadraticCurveTo(f.x1, f.y1, f.x2, f.y2);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-      f.life -= 0.012;
-      if (f.life <= 0) state.filament = null;
-    }
-
-    ctx.globalCompositeOperation = "source-over";
-    for (const p of state.particles) {
-      const ang = noise(p.x * 0.0014, p.y * 0.0014 + t * 0.05) * Math.PI * 4;
-      p.x += Math.cos(ang) * p.s;
-      p.y += Math.sin(ang) * p.s * 0.7;
-      if (p.x < 0) p.x = state.w;
-      if (p.x > state.w) p.x = 0;
-      if (p.y < 0) p.y = state.h;
-      if (p.y > state.h) p.y = 0;
-      ctx.fillStyle = `rgba(230, 236, 240, ${p.a})`;
-      ctx.fillRect(p.x, p.y, 1.2, 1.2);
-    }
-
-    requestAnimationFrame(tick);
+    seed();
+    frame(performance.now());
   }
 
   function onPointer(e) {
     const x = e.touches ? e.touches[0].clientX : e.clientX;
     const y = e.touches ? e.touches[0].clientY : e.clientY;
-    state.tx = x / state.w;
-    state.ty = y / state.h;
+    state.tx = (x / state.w - 0.5) * 140;
+    state.ty = (y / state.h - 0.4) * 80;
   }
 
   window.AetherField = {
     intensify() {
-      state.bloom = 1;
-      state.pulse = 1;
-      state.hueShift = 1;
+      state.rush = 1;
+      state.flash = 1;
+      state.hue = 1;
+      state.windows.forEach((w) => {
+        w.lit = 1;
+      });
       fireEvent();
     },
     status() {
@@ -211,15 +348,7 @@
   });
 
   resize();
-  scheduleEvent(performance.now() + 700);
-  if (reduced) {
-    const pal = hourPalette();
-    ctx.fillStyle = "#07080c";
-    ctx.fillRect(0, 0, state.w, state.h);
-    ctx.globalCompositeOperation = "lighter";
-    drawBlob(state.w * 0.4, state.h * 0.35, state.w * 0.4, pal.a, 0.22);
-    drawBlob(state.w * 0.7, state.h * 0.3, state.w * 0.32, pal.b, 0.16);
-    return;
-  }
+  schedule(performance.now() + 400);
+  if (reduced) return;
   requestAnimationFrame(tick);
 })();
