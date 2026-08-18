@@ -131,6 +131,7 @@
     setText("day-label", `${Math.round(dayPct)}%`);
     setText("hour-label", hourName(d));
     setText("field-label", "live");
+    setText("door-clock", clock);
     $$("#hours i").forEach((el) => {
       el.classList.toggle("on", Number(el.dataset.h) === d.getHours());
     });
@@ -151,12 +152,30 @@
     clearTimeout(showToast._t);
     showToast._t = setTimeout(() => { toast.hidden = true; }, 2400);
   }
+  let step = 1;
+  function setStep(n) {
+    step = n;
+    const passField = $("#pass-field");
+    const kicker = $("#door-kicker");
+    const title = $("#door-title");
+    const lede = $("#door-lede");
+    const go = $("#door-go");
+    const dots = $$(".steps i");
+    if (passField) passField.classList.toggle("hide", n === 1);
+    if (kicker) kicker.textContent = n === 1 ? "Local door · 01 / 02" : "Local door · 02 / 02";
+    if (title) title.textContent = n === 1 ? "Enter Aether" : "Lock it.";
+    if (lede) lede.textContent = n === 1 ? "Kept on this machine. Nothing is sent." : "Six characters. Length only. It never leaves.";
+    if (go) go.textContent = n === 1 ? "Continue" : "Open the surface";
+    dots.forEach((d, i) => d.classList.toggle("on", i < n));
+  }
   function openDoor() {
     door.hidden = false;
+    setStep(1);
     $("#email")?.focus();
   }
   function closeDoor() {
     door.hidden = true;
+    setStep(1);
     const err = $("#form-error");
     if (err) err.textContent = "";
   }
@@ -172,12 +191,23 @@
     const email = $("#email").value.trim();
     const pass = $("#pass").value;
     const err = $("#form-error");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      if (err) err.textContent = "Use a real-looking email. Nothing is sent.";
+    const sheet = $(".door-sheet");
+    if (step === 1) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (err) err.textContent = "Use a real-looking email. Nothing is sent.";
+        sheet?.classList.add("shake");
+        setTimeout(() => sheet?.classList.remove("shake"), 360);
+        return;
+      }
+      if (err) err.textContent = "";
+      setStep(2);
+      $("#pass")?.focus();
       return;
     }
     if (pass.length < 6) {
       if (err) err.textContent = "Six characters is the only rule.";
+      sheet?.classList.add("shake");
+      setTimeout(() => sheet?.classList.remove("shake"), 360);
       return;
     }
     localStorage.setItem(KEY, JSON.stringify({ email, at: Date.now() }));

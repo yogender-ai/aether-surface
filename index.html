@@ -28,7 +28,7 @@
   <div class="halo" aria-hidden="true"></div>
   <div class="cursor-glow" aria-hidden="true"></div>
   <div class="far-glow" aria-hidden="true"></div>
-  <img class="horizon" src="assets/horizon.jpg" alt="" />
+  <div class="horizon" aria-hidden="true"></div>
   <div class="cursor-mark" id="cursor-mark" hidden aria-hidden="true"></div>
 
   <header class="nav">
@@ -113,22 +113,25 @@
   <div class="door" id="door" hidden>
     <div class="door-backdrop" data-close-door></div>
     <div class="door-sheet" role="dialog" aria-modal="true" aria-labelledby="door-title">
+      <div class="door-glow" aria-hidden="true"></div>
       <button class="door-x" type="button" data-close-door aria-label="Close">x</button>
-      <p class="kicker">Local door</p>
+      <p class="kicker" id="door-kicker">Local door · 01 / 02</p>
       <h2 id="door-title">Enter Aether</h2>
-      <p class="lede">Kept on this machine. We do not invent a server account.</p>
+      <p class="lede" id="door-lede">Kept on this machine. Nothing is sent.</p>
+      <div class="steps" aria-hidden="true"><i class="on"></i><i></i></div>
       <form id="door-form" novalidate>
-        <label>
+        <label class="field" id="email-field">
           <span>Email</span>
           <input id="email" name="email" type="email" autocomplete="username" required placeholder="you@studio.dev" />
         </label>
-        <label>
+        <label class="field hide" id="pass-field">
           <span>Passphrase</span>
           <input id="pass" name="pass" type="password" autocomplete="current-password" required minlength="6" placeholder="six characters or more" />
         </label>
         <p class="form-error" id="form-error" role="alert"></p>
-        <button class="cta full" type="submit">Open the surface</button>
+        <button class="cta full" type="submit" id="door-go" data-magnetic>Continue</button>
       </form>
+      <p class="kicker door-clock" id="door-clock"></p>
     </div>
   </div>
 
